@@ -1,0 +1,162 @@
+<div class="location-map">
+  @if (loading()) {
+    <span class="sr-only" role="status">Loading map…</span>
+  }
+  <div
+    #mapViewport
+    class="map-viewport"
+    [class.region-view]="view().scale < 10"
+    tabindex="0"
+    role="group"
+    [attr.aria-busy]="loading() ? true : null"
+    aria-label="Event and hotel map. Arrow keys pan, plus and minus zoom, Home resets the view."
+    (pointerdown)="onPointerDown($event)"
+    (pointermove)="onPointerMove($event)"
+    (pointerup)="onPointerEnd()"
+    (pointercancel)="onPointerEnd()"
+    (lostpointercapture)="onPointerEnd()"
+    (keydown)="onKeydown($event)"
+  >
+    @if (loading()) {
+      <div class="map-loading-surface" aria-hidden="true">
+        <app-skeleton height="100%" radius="0" />
+      </div>
+    }
+    <svg
+      class="geography"
+      [attr.viewBox]="'0 0 ' + size().width + ' ' + size().height"
+      aria-hidden="true"
+    >
+      <g [attr.transform]="transform()">
+        @if (view().scale < 10) {
+          @for (country of countryPaths(); track country.name) {
+            <path class="country" [attr.d]="country.path" fill-rule="evenodd" />
+          }
+        }
+        @for (feature of cityPaths(); track $index) {
+          @if (feature.kind !== 'road') {
+            <path
+              [class.water]="feature.kind === 'water'"
+              [class.park]="feature.kind === 'park'"
+              [class.water-line]="feature.kind === 'water' && !feature.closed"
+              [attr.d]="feature.path"
+            />
+          }
+        }
+        @if (view().scale >= 10) {
+          @for (feature of cityPaths(); track $index) {
+            @if (feature.kind === 'road') {
+              <path class="road-edge" [class.major]="feature.major" [attr.d]="feature.path" />
+              <path class="road" [class.major]="feature.major" [attr.d]="feature.path" />
+            }
+          }
+        }
+      </g>
+      @for (label of roadLabels(); track $index) {
+        <text class="street-name" [attr.x]="label.x" [attr.y]="label.y">
+          <title>{{ label.fullName }}</title>
+          {{ label.name }}
+        </text>
+      }
+      @for (impact of item().impacts; track impact.hotelId) {
+        <line
+          class="distance-line"
+          [class.selected]="impact.hotelId === selectedHotelId()"
+          [attr.x1]="screen(item().event.coordinates).x"
+          [attr.y1]="screen(item().event.coordinates).y"
+          [attr.x2]="screen(impact.hotel.coordinates).x"
+          [attr.y2]="screen(impact.hotel.coordinates).y"
+        />
+      }
+      @for (marker of markers(); track marker.id) {
+        <line
+          class="marker-stem"
+          [attr.x1]="screen(marker.coordinates).x"
+          [attr.y1]="screen(marker.coordinates).y"
+          [attr.x2]="markerPosition(marker).x"
+          [attr.y2]="markerPosition(marker).y"
+        />
+      }
+    </svg>
+    @for (marker of markers(); track marker.id) {
+      @if (markerVisible(marker)) {
+        <div
+          class="map-point"
+          [class.event-point]="marker.kind === 'event'"
+          [class.hotel-point]="marker.kind === 'hotel'"
+          [class.selected]="marker.selected"
+          [style.left.px]="markerPosition(marker).x"
+          [style.top.px]="markerPosition(marker).y"
+        >
+          @if (marker.kind === 'hotel') {
+            <button
+              class="marker-symbol"
+              type="button"
+              [attr.aria-label]="'Select ' + marker.name + ', ' + marker.city"
+              [attr.aria-pressed]="marker.selected"
+              (click)="selectHotel(marker.id)"
+            >
+              <app-icon name="building" />
+            </button>
+          } @else {
+            <span class="marker-symbol" role="img" [attr.aria-label]="'Event: ' + item().event.name"
+              ><app-icon name="pin"
+            /></span>
+          }
+          <span class="marker-label"
+            >{{ marker.kind === 'event' ? 'Event' : marker.name }}
+            @if (view().scale < 10) {
+              <small>{{ marker.city }}</small>
+            }
+          </span>
+        </div>
+      }
+    }
+    <div class="map-navigation" aria-label="Map controls">
+      <button type="button" aria-label="Zoom in" title="Zoom in" (click)="zoom(1)">
+        <app-icon name="plus" />
+      </button>
+      <button
+        class="zoom-out"
+        type="button"
+        aria-label="Zoom out"
+        title="Zoom out"
+        (click)="zoom(-1)"
+      >
+        <span aria-hidden="true">−</span>
+      </button>
+    </div>
+    <div class="map-fit-actions">
+      <button type="button" (click)="fit(false)">Reset view</button>
+      @if (distantCount()) {
+        <button type="button" (click)="fit(true)" [class.active]="allLocations()">
+          Show all locations
+        </button>
+      }
+    </div>
+    <div class="north" aria-hidden="true"><span>↑</span>N</div>
+    <div class="map-scale" aria-hidden="true">
+      <span [style.width.px]="scaleLabel().width"></span>{{ scaleLabel().label }}
+    </div>
+    @if (loading()) {
+      <span class="map-status map-loading-status" aria-hidden="true">
+        <app-spinner size="sm" [decorative]="true" />Loading map…
+      </span>
+    } @else if (failed()) {
+      <span class="map-status" role="status"
+        >Street map unavailable. Locations remain visible.</span
+      >
+    }
+    <a
+      class="map-attribution"
+      href="https://www.openstreetmap.org/copyright"
+      target="_blank"
+      rel="noopener noreferrer"
+      >© OpenStreetMap contributors</a
+    >
+  </div>
+  <div class="map-key">
+    <span><i class="event-dot"></i>Event</span><span><i class="hotel-dot"></i>Hotels</span
+    ><span class="distance-explanation">Straight-line distances</span>
+  </div>
+</div>

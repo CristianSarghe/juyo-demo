@@ -1,0 +1,22 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "juyo-api",
+  "main": "src/worker.ts",
+  "compatibility_date": "2026-11-14",
+  "compatibility_flags": ["nodejs_compat"],
+  "workers_dev": false,
+  "preview_urls": false,
+  "minify": true,
+  "keep_vars": true,
+  "routes": [{ "pattern": "api-juyo.cristiansarghe.com", "custom_domain": true }],
+  "vars": {
+    "SQL_PORT": "1433",
+    "ALLOWED_ORIGINS": "http://127.0.0.1:4200,http://localhost:4200,http://127.0.0.1:4201,http://localhost:4201,https://juyo-demo.pages.dev,https://juyo-demo.cristiansarghe.com",
+    "KASSANDRA_URL": "https://mcp-juyo.cristiansarghe.com",
+  },
+  "durable_objects": {
+    "bindings": [{ "name": "SQL_GATEWAY", "class_name": "JuyoSqlGateway" }],
+  },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["JuyoSqlGateway"] }],
+  "observability": { "enabled": true, "head_sampling_rate": 0.1 },
+}

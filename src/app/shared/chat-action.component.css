@@ -1,0 +1,252 @@
+:host {
+  display: block;
+  min-width: 0;
+  margin-top: 18px;
+}
+.proposed-change {
+  border: 1px solid var(--kassandra-line);
+  border-radius: 10px;
+  padding: 16px;
+  background: #fff;
+  box-shadow: 0 3px 8px #37274404;
+}
+h4 {
+  font-size: 13px;
+  line-height: 1.5;
+  font-weight: 600;
+  margin: 0 0 14px;
+  overflow-wrap: anywhere;
+}
+dl {
+  margin: 0;
+}
+dl > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 7px 0;
+  font-size: 11px;
+  line-height: 1.5;
+}
+dt {
+  color: var(--muted);
+  flex: none;
+}
+dd {
+  margin: 0;
+  text-align: right;
+  overflow-wrap: anywhere;
+  font-variant-numeric: tabular-nums;
+}
+.rate {
+  border-top: 1px solid var(--line);
+  margin-top: 5px;
+  padding-top: 12px;
+}
+.rate dd {
+  color: var(--brand-ink);
+  font-size: 17px;
+  line-height: 1.2;
+  font-weight: 600;
+}
+p {
+  margin: 12px 0 0;
+  font-size: 10px;
+  line-height: 1.6;
+  color: var(--muted);
+}
+.decision-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 16px;
+}
+.confirmation-question {
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 600;
+}
+button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 36px;
+  padding: 8px 13px;
+  border-radius: 7px;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.4;
+  transition:
+    background 150ms,
+    color 150ms;
+}
+.apply-change {
+  background: var(--kassandra-ink);
+  color: #fff;
+}
+.apply-change app-brand-mark {
+  --kassandra-mark-color: #fff;
+  width: 18px;
+  height: 18px;
+}
+.apply-change:hover:not(:disabled) {
+  background: var(--brand-hover);
+}
+.cancel-change {
+  color: var(--muted);
+}
+.cancel-change:hover:not(:disabled) {
+  color: var(--ink);
+  background: var(--brand-soft);
+}
+button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+button:focus-visible {
+  outline: 2px solid var(--brand-ink);
+  outline-offset: 3px;
+}
+.decision-status {
+  color: var(--brand-ink);
+  font-weight: 600;
+  border-top: 1px solid var(--line);
+  padding-top: 12px;
+}
+@media (prefers-reduced-motion: reduce) {
+  button {
+    transition: none;
+  }
+}
+
+.batch-counts {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 3px 12px;
+  margin: 0 0 13px;
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.6;
+}
+.batch-counts h4 {
+  margin: 0;
+  color: var(--ink);
+}
+.review-caption {
+  margin: 0 0 7px;
+  font-size: 9px;
+}
+.rate-review {
+  max-height: 360px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: #c7bbd8 transparent;
+  padding: 0 10px 0 0;
+  border-block: 1px solid var(--line);
+  container-type: inline-size;
+}
+.rate-review:focus-visible {
+  outline: 2px solid var(--brand-ink);
+  outline-offset: 4px;
+  border-radius: 3px;
+}
+.hotel-review + .hotel-review {
+  border-top: 1px solid var(--line);
+}
+h5 {
+  margin: 15px 0 10px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.5;
+  color: var(--ink);
+}
+h6 {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--brand-ink);
+  line-height: 1.5;
+}
+.type-review + .type-review {
+  border-top: 1px solid #f0f0f0;
+  padding-top: 10px;
+}
+.price-comparisons .rate-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  column-gap: 12px;
+  padding: 8px 0 12px;
+}
+.rate-row dt {
+  min-width: 0;
+  color: var(--ink);
+  font-size: 10px;
+  line-height: 1.5;
+}
+.rate-row dt small {
+  display: block;
+  color: var(--muted);
+  font-size: 9px;
+}
+.rate-row dd {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: flex-end;
+  column-gap: 6px;
+  font-size: 10px;
+  line-height: 1.5;
+}
+.price-before {
+  color: var(--muted);
+  white-space: nowrap;
+}
+.price-arrow {
+  color: #8c9290;
+}
+.rate-row dd strong {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--brand-ink);
+  white-space: nowrap;
+}
+.rate-row dd.row-reason {
+  grid-column: 1 / -1;
+  display: block;
+  margin: 4px 0 0;
+  text-align: left;
+  color: var(--muted);
+  font-size: 9px;
+  line-height: 1.5;
+}
+@container (max-width: 315px) {
+  .price-comparisons .rate-row {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: 5px;
+  }
+  .rate-row dt {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 10px;
+  }
+  .rate-row dd {
+    justify-content: flex-start;
+  }
+}
+@media (max-width: 480px) {
+  .rate-review {
+    max-height: 44dvh;
+  }
+  .decision-actions {
+    align-items: stretch;
+  }
+  .apply-change {
+    flex: 1;
+  }
+}

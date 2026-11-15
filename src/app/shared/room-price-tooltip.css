@@ -1,0 +1,258 @@
+.juyo-price-tooltip {
+  display: flex;
+  flex-direction: column;
+  width: min(320px, calc(100vw - 24px));
+  max-height: min(480px, calc(100vh - 32px));
+  max-height: min(480px, calc(100dvh - 32px));
+  overflow: hidden;
+  border: 1px solid var(--line, #e7eae7);
+  border-radius: 14px;
+  background: var(--surface, #fff);
+  box-shadow:
+    0 14px 40px #1b211f16,
+    0 3px 9px #1b211f08;
+  color: var(--ink, #1b211f);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  line-height: 1.45;
+  font-variant-numeric: tabular-nums;
+  white-space: normal;
+}
+.juyo-price-tooltip,
+.juyo-price-tooltip * {
+  box-sizing: border-box;
+}
+.juyo-price-tooltip__heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 17px 18px 0;
+}
+.juyo-price-tooltip__heading h4 {
+  margin: 0;
+  color: var(--ink, #1b211f);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.2px;
+  line-height: 1.35;
+}
+.juyo-price-tooltip__heading p {
+  margin: 3px 0 0;
+  color: var(--muted, #69716c);
+  font-size: 10px;
+}
+.juyo-price-tooltip__status {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  padding-top: 1px;
+  font-size: 9px;
+  white-space: nowrap;
+}
+.juyo-price-tooltip__today {
+  padding: 3px 7px;
+  border-radius: 5px;
+  background: var(--brand-soft, #f0edfc);
+  color: var(--brand-ink, #6442a6);
+  font-weight: 500;
+}
+.juyo-price-tooltip__outside {
+  color: var(--muted, #69716c);
+}
+.juyo-price-tooltip__summary {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 16px;
+  flex-shrink: 0;
+  margin: 18px 18px 16px;
+}
+.juyo-price-tooltip__summary dt {
+  margin: 0 0 4px;
+  color: var(--muted, #69716c);
+  font-size: 10px;
+  font-weight: 400;
+}
+.juyo-price-tooltip__summary dd {
+  margin: 0;
+  font-weight: 600;
+  line-height: 1.2;
+}
+.juyo-price-tooltip__average dd {
+  color: var(--brand-ink, #6442a6);
+  font-size: 26px;
+  letter-spacing: -0.9px;
+}
+.juyo-price-tooltip__availability {
+  padding-left: 15px;
+  border-left: 1px solid var(--line, #e7eae7);
+}
+.juyo-price-tooltip__availability dd {
+  font-size: 23px;
+  letter-spacing: -0.6px;
+}
+.juyo-price-tooltip__availability dd small {
+  color: var(--muted, #69716c);
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 0;
+}
+.juyo-price-tooltip__availability > span {
+  display: block;
+  margin-top: 4px;
+  color: var(--muted, #69716c);
+  font-size: 9px;
+}
+.juyo-price-tooltip__held {
+  display: block;
+  margin-top: 4px;
+  color: var(--brand-ink, #6442a6);
+  font-size: 9px;
+}
+.juyo-price-tooltip__prices {
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: 246px;
+  overflow: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: #c6c0cf transparent;
+}
+.juyo-price-tooltip__prices table {
+  width: 100%;
+  margin: 0;
+  border-collapse: separate;
+  border-spacing: 0;
+  color: inherit;
+  font-size: 12px;
+  text-align: left;
+}
+.juyo-price-tooltip__prices thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  padding: 8px 18px;
+  border-top: 1px solid var(--line, #e7eae7);
+  border-bottom: 1px solid var(--line, #e7eae7);
+  background: #f8f9f8;
+  color: var(--muted, #69716c);
+  font-size: 10px;
+  font-weight: 400;
+  line-height: 1.5;
+}
+.juyo-price-tooltip__prices thead th:last-child {
+  text-align: right;
+}
+.juyo-price-tooltip__prices tbody th,
+.juyo-price-tooltip__prices tbody td {
+  padding: 9px 18px;
+  border-bottom: 1px solid #f0f1f0;
+  line-height: 1.5;
+}
+.juyo-price-tooltip__prices tbody th {
+  font-size: 12px;
+  font-weight: 500;
+}
+.juyo-price-tooltip__prices tbody tr:last-child > * {
+  border-bottom: 0;
+}
+.juyo-price-tooltip__volume {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+}
+.juyo-price-tooltip__volume > strong {
+  min-width: 16px;
+  font-size: 12px;
+  font-weight: 600;
+  text-align: right;
+}
+.juyo-price-tooltip__track {
+  width: 54px;
+  height: 4px;
+  overflow: hidden;
+  border-radius: 4px;
+  background: var(--brand-soft, #f0edfc);
+}
+.juyo-price-tooltip__track > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: #ae9bda;
+}
+.juyo-price-tooltip__prices td.juyo-price-tooltip__empty {
+  padding: 23px 18px;
+  color: var(--muted, #69716c);
+  font-size: 11px;
+  text-align: center;
+}
+.juyo-price-tooltip__total {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 18px;
+  border-top: 1px solid var(--line, #e7eae7);
+  color: var(--muted, #69716c);
+  font-size: 10px;
+}
+.juyo-price-tooltip__total > strong {
+  min-width: 16px;
+  color: var(--ink, #1b211f);
+  font-size: 12px;
+  font-weight: 600;
+  text-align: right;
+}
+.juyo-price-tooltip--compact {
+  width: min(260px, calc(100vw - 24px));
+  border-radius: 11px;
+}
+.juyo-price-tooltip--compact .juyo-price-tooltip__heading {
+  gap: 8px;
+  padding: 12px 14px 0;
+}
+.juyo-price-tooltip--compact .juyo-price-tooltip__heading h4 {
+  font-size: 12px;
+}
+.juyo-price-tooltip--compact .juyo-price-tooltip__heading p,
+.juyo-price-tooltip--compact .juyo-price-tooltip__availability > span {
+  display: none;
+}
+.juyo-price-tooltip--compact .juyo-price-tooltip__summary {
+  gap: 12px;
+  margin: 13px 14px;
+}
+.juyo-price-tooltip--compact .juyo-price-tooltip__average dd {
+  font-size: 22px;
+}
+.juyo-price-tooltip--compact .juyo-price-tooltip__availability {
+  padding-left: 12px;
+}
+.juyo-price-tooltip--compact .juyo-price-tooltip__availability dd {
+  font-size: 20px;
+}
+.juyo-price-tooltip--compact .juyo-price-tooltip__total {
+  padding: 9px 14px;
+  font-size: 9px;
+}
+.juyo-price-tooltip--compact .juyo-price-tooltip__total strong {
+  color: var(--ink, #1b211f);
+  font-weight: 600;
+}
+@media (max-width: 420px) {
+  .juyo-price-tooltip__heading {
+    gap: 8px;
+  }
+  .juyo-price-tooltip__summary {
+    gap: 12px;
+  }
+  .juyo-price-tooltip__average dd {
+    font-size: 24px;
+  }
+  .juyo-price-tooltip__track {
+    width: 44px;
+  }
+}

@@ -1,0 +1,359 @@
+<div class="revenue-workspace grid gap-3" animate.enter="dashboard-enter">
+  <div class="revenue-column">
+    <article class="dashboard-card revenue-card bg-white rounded-xl">
+      <div class="revenue-card-heading">
+        @if (isDrilldown()) {
+          <button
+            class="revenue-back"
+            type="button"
+            (click)="backToPeriod()"
+            [attr.aria-label]="'Back to ' + period().label"
+          >
+            <app-icon name="arrow" /><span>Back to {{ period().label }}</span>
+          </button>
+        }
+        <header class="card-heading revenue-heading flex flex-wrap items-baseline gap-3">
+          <h2
+            #revenueHeading
+            tabindex="-1"
+            [attr.aria-label]="revenueTitle() + ', ' + cardPeriod().label"
+          >
+            {{ revenueTitle() }}
+          </h2>
+          @if (isDrilldown()) {
+            <span>{{ cardPeriod().label }}</span>
+          }
+        </header>
+      </div>
+      <div
+        class="revenue-summary grid grid-cols-2 gap-4"
+        [class.single-summary]="!cardHasActual() || !cardHasBooked()"
+      >
+        @if (cardHasActual()) {
+          <div>
+            <span
+              >Earned
+              @if (!isDailyView()) {
+                <small>{{ actualRange() }}</small>
+              }
+            </span>
+            <strong>{{ money(cardOutlook().realizedRevenue) }}</strong>
+          </div>
+        }
+        @if (cardHasBooked()) {
+          <div>
+            <span
+              >On the books
+              @if (!isDailyView()) {
+                <small>{{ bookedRange() }}</small>
+              }
+            </span>
+            <strong>{{ money(cardOutlook().onBooksRevenue) }}</strong>
+          </div>
+        }
+      </div>
+      @if (isDailyView() && dailyLoading()) {
+        <div class="daily-load-state" role="status">
+          <app-spinner size="sm" [decorative]="true" /> Loading day…
+        </div>
+      } @else if (isDailyView() && dailyError()) {
+        <div class="daily-load-state" role="alert">
+          <span>{{ dailyError() }}</span
+          ><button type="button" (click)="retryDay()">Try again</button>
+        </div>
+      } @else if (daySummary(); as day) {
+        <div class="day-overview" animate.enter="day-view-enter">
+          <dl class="day-primary">
+            <div>
+              <dt>{{ day.basis === 'actual' ? 'Occupancy' : 'Booked occupancy' }}</dt>
+              <dd>
+                {{ percent(day.occupancy)
+                }}<small
+                  >{{ number(day.occupiedRooms) }} / {{ number(day.sellableRooms) }} sellable
+                  rooms</small
+                >
+              </dd>
+            </div>
+            <div>
+              <dt>{{ day.basis === 'actual' ? 'Unsold rooms' : 'Rooms to sell' }}</dt>
+              <dd>{{ number(day.roomsToSell) }}</dd>
+            </div>
+          </dl>
+          <dl class="day-operations">
+            <div>
+              <dt>{{ day.basis === 'actual' ? 'Average rate' : 'Booked rate' }}</dt>
+              <dd>{{ day.occupiedRooms ? money(day.averageRate) : '—' }}</dd>
+            </div>
+            <div>
+              <dt>Out of order</dt>
+              <dd>
+                {{ number(day.outOfOrderRooms)
+                }}<small>of {{ number(day.physicalRooms) }} rooms</small>
+              </dd>
+            </div>
+            <div>
+              <dt>Arrivals</dt>
+              <dd>{{ number(day.arrivals) }}<small>rooms</small></dd>
+            </div>
+            <div>
+              <dt>Departures</dt>
+              <dd>{{ number(day.departures) }}<small>rooms</small></dd>
+            </div>
+          </dl>
+        </div>
+      }
+      @if (!isSingleDay()) {
+        <div
+          #periodView
+          class="period-view"
+          [hidden]="isDailyView()"
+          tabindex="-1"
+          role="region"
+          [attr.aria-label]="'Room revenue chart for ' + period().label"
+        >
+          <div class="chart-legend flex flex-wrap items-center gap-4" aria-label="Chart legend">
+            @if (hasActual()) {
+              <span><i class="legend-actual"></i>Actual</span>
+            }
+            @if (hasBooked()) {
+              <span><i class="legend-booked"></i>On the books</span>
+              <span><i class="legend-target"></i>To daily target</span>
+            }
+            @if (hasToday()) {
+              <span class="today-key"><i></i>Today · {{ date(snapshot.asOf) }}</span>
+            }
+            @if (hasChartContext()) {
+              <span><i class="legend-outside"></i>Outside selection</span>
+            }
+          </div>
+          <app-booking-revenue-chart
+            [rows]="chartContext().rows"
+            [range]="range()"
+            [windowStart]="chartContext().startIndex"
+            [windowSize]="chartContext().windowSize"
+            [asOf]="snapshot.asOf"
+            [selectedDate]="selectedDay().date"
+            [height]="238"
+            (selectDate)="openDay($event)"
+          />
+        </div>
+      }
+      <section class="target-progress" aria-label="Selected period revenue target">
+        <h3 class="section-subtitle">Target</h3>
+        <div class="target-progress-heading flex items-baseline justify-between gap-3">
+          <span class="target-coverage"
+            ><strong>{{
+              targetProgress().hasTarget ? percent(targetCoverage()) : 'No target'
+            }}</strong>
+            @if (targetProgress().hasTarget) {
+              of target
+            }
+          </span>
+          @if (targetProgress().hasTarget) {
+            <span class="target-goal"
+              ><strong>{{ money(cardOutlook().targetRevenue) }}</strong
+              ><small>100%</small></span
+            >
+          }
+        </div>
+        <app-chart
+          [option]="targetProgressChart()"
+          [height]="16"
+          [ariaLabel]="targetProgressDescription()"
+        />
+        <div class="target-breakdown flex flex-wrap items-center gap-4">
+          @if (cardHasActual()) {
+            <span
+              ><i class="legend-actual"></i>Earned
+              <strong>{{
+                targetProgress().hasTarget
+                  ? percent(targetProgress().earnedPercent)
+                  : money(cardOutlook().realizedRevenue)
+              }}</strong></span
+            >
+          }
+          @if (cardHasBooked()) {
+            <span
+              ><i class="legend-booked"></i>Booked
+              <strong>{{
+                targetProgress().hasTarget
+                  ? percent(targetProgress().bookedPercent)
+                  : money(cardOutlook().onBooksRevenue)
+              }}</strong></span
+            >
+          }
+          @if (targetProgress().hasTarget) {
+            <span
+              ><i class="legend-target"></i>{{ targetGapLabel() }}
+              <strong>{{ percent(targetProgress().remainingPercent) }}</strong></span
+            >
+          }
+        </div>
+        @if (targetProgress().overage > 0) {
+          <p class="target-exceeded">{{ money(targetProgress().overage, 2) }} above target</p>
+        }
+      </section>
+    </article>
+    @if (!isSingleDay()) {
+      <article class="dashboard-card opportunity-card bg-white rounded-xl">
+        <header class="card-heading opportunity-heading">
+          <h2>{{ isClosed() ? 'Lowest actual occupancy' : 'Lowest booked dates' }}</h2>
+        </header>
+        <div class="opportunity-list">
+          @for (day of opportunities(); track day.date) {
+            <button
+              type="button"
+              (click)="openDay(day.date)"
+              [class.active]="activeDay() === day.date"
+              [attr.aria-label]="
+                'Inspect ' +
+                date(day.date) +
+                ', ' +
+                percent(occupancy(day)) +
+                (isClosed() ? ' occupancy' : ' booked')
+              "
+            >
+              <span class="opportunity-date"
+                ><strong>{{ date(day.date) }}</strong
+                ><small>{{ weekday(day.date) }}</small></span
+              ><span class="opportunity-rooms"
+                ><strong>{{
+                  number(
+                    isClosed()
+                      ? day.targetRooms - day.securedRooms
+                      : day.roomsAvailable - day.securedRooms
+                  )
+                }}</strong
+                ><small>{{ isClosed() ? 'rooms below target' : 'rooms to sell' }}</small></span
+              ><span class="opportunity-occupancy"
+                >{{ percent(occupancy(day))
+                }}<small>{{ isClosed() ? 'occupancy' : 'booked' }}</small
+                ><app-icon name="arrow"
+              /></span>
+            </button>
+          } @empty {
+            <p class="all-on-target">
+              {{
+                isClosed()
+                  ? 'Every selected date met its room target.'
+                  : 'Every booked date meets its room target.'
+              }}
+            </p>
+          }
+        </div>
+      </article>
+    }
+  </div>
+
+  <div class="performance-rail grid gap-3">
+    <article class="dashboard-card occupancy-card bg-white rounded-xl">
+      <header class="card-heading">
+        <h2>Occupancy</h2>
+        <span>Rooms sold out of sellable rooms</span>
+      </header>
+      <app-occupancy-trend class="occupancy-trend" [rows]="days()" [periodLabel]="period().label" />
+      <dl class="occupancy-summary">
+        <div>
+          <dt>
+            <span
+              ><i class="occupancy-key" [class.booked]="!hasActual()" aria-hidden="true"></i
+              >{{ hasActual() ? 'Stayed' : 'Booked' }}</span
+            >
+            <small>{{ hasActual() ? actualRange() : bookedRange() }}</small>
+          </dt>
+          <dd>{{ percent(primaryOccupancy()) }}</dd>
+        </div>
+        <div>
+          <dt>
+            <span>
+              @if (hasActual() && hasBooked()) {
+                <i class="occupancy-key booked" aria-hidden="true"></i>
+              }
+              {{ hasActual() && hasBooked() ? 'Booked' : 'Target' }}
+            </span>
+            <small>{{ hasActual() && hasBooked() ? bookedRange() : period().label }}</small>
+          </dt>
+          <dd>
+            {{
+              percent(hasActual() && hasBooked() ? outlook().onBooksOccupancy : occupancyTarget())
+            }}
+          </dd>
+          @if (hasActual() && hasBooked()) {
+            <p class="occupancy-target">
+              Target <span>{{ percent(occupancyTarget()) }}</span>
+            </p>
+          }
+        </div>
+      </dl>
+    </article>
+
+    <article class="dashboard-card sources-card bg-white rounded-xl">
+      <header class="card-heading">
+        <h2>Booking sources</h2>
+      </header>
+      <app-booking-sources [rows]="bookingSources()" [periodLabel]="period().label" />
+    </article>
+  </div>
+
+  <section class="organization-outlook" aria-labelledby="organization-outlook-title">
+    <header class="organization-heading flex flex-wrap items-baseline justify-between gap-3">
+      <h2 id="organization-outlook-title">General organization outlook</h2>
+    </header>
+    <article class="dashboard-card hotels-card bg-white rounded-xl">
+      <div
+        class="hotel-table-scroll"
+        tabindex="0"
+        role="region"
+        [attr.aria-label]="
+          isClosed() ? 'Hotel revenue and actual occupancy' : 'Hotel revenue and booked occupancy'
+        "
+      >
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">Hotel</th>
+              <th scope="col">
+                Earned<small>{{ actualRange() }}</small>
+              </th>
+              <th scope="col">
+                On the books<small>{{ bookedRange() }}</small>
+              </th>
+              <th scope="col">
+                {{ hasBooked() ? 'Booked occupancy' : 'Actual occupancy'
+                }}<small>{{ hasBooked() ? bookedRange() : actualRange() }}</small>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of hotelRows(); track row.hotel.id) {
+              <tr [class.current-hotel]="scope() === row.hotel.id">
+                <th scope="row">
+                  <button
+                    type="button"
+                    (click)="chooseHotel(row.hotel.id)"
+                    [attr.aria-label]="'Show ' + row.hotel.name"
+                    [attr.aria-pressed]="scope() === row.hotel.id"
+                  >
+                    <span class="hotel-code">{{ row.hotel.id.slice(4).toUpperCase() }}</span
+                    ><span
+                      >{{ row.hotel.name }}<small>{{ row.hotel.city }}</small></span
+                    >
+                  </button>
+                </th>
+                <td>{{ hasActual() ? money(row.outlook.realizedRevenue) : '—' }}</td>
+                <td>{{ hasBooked() ? money(row.outlook.onBooksRevenue) : '—' }}</td>
+                <td>
+                  {{
+                    percent(
+                      hasBooked() ? row.outlook.onBooksOccupancy : row.outlook.realizedOccupancy
+                    )
+                  }}
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </article>
+  </section>
+</div>

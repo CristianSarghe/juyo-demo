@@ -1,0 +1,186 @@
+<section class="room-pricing" aria-labelledby="room-prices-title" animate.enter="prices-enter">
+  <header class="pricing-heading"><h2 id="room-prices-title" tabindex="-1">Room prices</h2></header>
+  <div class="pricing-filters">
+    <div class="filter-field">
+      <span>Room type</span
+      ><app-select
+        label="Pricing room type"
+        [disabled]="saving()"
+        [options]="typeOptions()"
+        [value]="roomTypeId()"
+        (valueChange)="selectType($event)"
+      />
+    </div>
+    <div class="filter-field">
+      <span>From</span>
+      <app-date-picker
+        #fromDate
+        label="From"
+        [disabled]="saving()"
+        [min]="minDate"
+        [max]="rangeError() ? maxDate : range().endDate"
+        [value]="range().startDate"
+        [hint]="rangeError() ? '' : 'On or before ' + date(range().endDate)"
+        (valueChange)="changeDate('startDate', $event)"
+      />
+    </div>
+    <div class="filter-field">
+      <span>Through</span>
+      <app-date-picker
+        #throughDate
+        label="Through"
+        [disabled]="saving()"
+        [min]="rangeError() ? minDate : range().startDate"
+        [max]="maxDate"
+        [value]="range().endDate"
+        [hint]="rangeError() ? '' : 'On or after ' + date(range().startDate)"
+        (valueChange)="changeDate('endDate', $event)"
+      />
+    </div>
+  </div>
+  @if (rangeError()) {
+    <p class="error date-error" id="rate-date-error" role="alert">{{ rangeError() }}</p>
+  }
+  <div class="rate-workspace">
+    <div class="rate-analysis">
+      <app-room-price-history
+        [hotelId]="hotelId()"
+        [roomTypeId]="roomTypeId()"
+        [selection]="range()"
+      />
+      <section class="current-rates">
+        <header class="card-heading">
+          <div>
+            <h3>Current rates</h3>
+            <p>{{ hotelName() }} · {{ roomType().name }} · Per room, per night</p>
+          </div>
+          <strong class="rate-range">{{ currentRate() }}</strong>
+        </header>
+        @if (days().length) {
+          <div class="rate-summary">
+            <span>{{ days().length }} {{ days().length === 1 ? 'night' : 'nights' }}</span
+            ><span>{{ available() }} room nights available</span>
+          </div>
+          <div class="table-scroll" tabindex="0" aria-label="Current nightly rates">
+            <table>
+              <thead>
+                <tr>
+                  <th>Dates</th>
+                  <th class="nights-column">Nights</th>
+                  <th class="price-column">Nightly rate</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (period of periods(); track period.startDate) {
+                  <tr>
+                    <th scope="row">{{ dates(period.startDate, period.endDate) }}</th>
+                    <td class="nights-column">{{ period.nights }}</td>
+                    <td class="price-column">
+                      <strong>{{ money(period.nightlyRate) }}</strong>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        } @else {
+          <p class="empty-state">Choose a valid interval to see its rates.</p>
+        }
+      </section>
+    </div>
+    <section class="update-panel">
+      <h3>Update rates</h3>
+      <p class="update-context">
+        {{ hotelName() }} · {{ roomType().name }}
+        @if (!rangeError()) {
+          · {{ dates(range().startDate, range().endDate) }}
+        }
+      </p>
+      @if (saving()) {
+        <span class="sr-only" role="status">Updating room rates…</span>
+      }
+      <form (submit)="update($event)" [attr.aria-busy]="saving() ? true : null" novalidate>
+        <label class="rate-label" for="new-nightly-rate">New nightly rate</label>
+        <div class="rate-input">
+          <span aria-hidden="true">€</span
+          ><input
+            id="new-nightly-rate"
+            [disabled]="saving()"
+            type="number"
+            min="0.01"
+            max="10000"
+            step="0.01"
+            inputmode="decimal"
+            placeholder="0.00"
+            [value]="nightlyRate()"
+            (input)="changeRate($event)"
+            [attr.aria-invalid]="touched() && rateError() ? true : null"
+            [attr.aria-describedby]="
+              'rate-update-note' + (touched() && rateError() ? ' rate-value-error' : '')
+            "
+          />
+        </div>
+        @if (touched() && rateError()) {
+          <p class="error" id="rate-value-error">{{ rateError() }}</p>
+        }
+        <p class="rate-note" id="rate-update-note">
+          Applies to every night in this interval. Existing bookings keep their rates.
+        </p>
+        <button
+          class="reason-toggle"
+          type="button"
+          [disabled]="saving()"
+          (click)="reasonOpen.set(!reasonOpen())"
+          [attr.aria-expanded]="reasonOpen()"
+          aria-controls="rate-reason"
+        >
+          <span>{{ reasonOpen() ? 'Reason (optional)' : 'Add a reason' }}</span
+          ><app-icon [name]="reasonOpen() ? 'down' : 'plus'" />
+        </button>
+        @if (reasonOpen()) {
+          <div class="reason-fields" id="rate-reason" animate.enter="reason-enter">
+            <label for="rate-reason-note"
+              >Reason<input
+                id="rate-reason-note"
+                [disabled]="saving()"
+                type="text"
+                maxlength="240"
+                placeholder="e.g. seasonal pricing"
+                [value]="reason()"
+                (input)="reason.set($any($event.target).value)"
+            /></label>
+            <div class="filter-field">
+              <span>Related event (optional)</span
+              ><app-select
+                label="Related event (optional)"
+                [disabled]="saving()"
+                [options]="eventOptions()"
+                [value]="eventId()"
+                (valueChange)="selectEvent($event)"
+              />
+            </div>
+          </div>
+        }
+        <button
+          class="update-button"
+          type="submit"
+          [disabled]="saving() || !!rangeError() || !!rateError() || !changed()"
+          [attr.aria-busy]="saving() ? true : null"
+        >
+          {{ saving() ? 'Updating…' : 'Update rates' }}
+          @if (saving()) {
+            <app-spinner size="sm" [decorative]="true" />
+          } @else {
+            <app-icon name="arrow" />
+          }
+        </button>
+        @if (feedback()) {
+          <p class="success" role="status"><app-icon name="check" />{{ feedback() }}</p>
+        }
+        @if (saveError()) {
+          <p class="error" role="alert">{{ saveError() }}</p>
+        }
+      </form>
+    </section>
+  </div>
+</section>

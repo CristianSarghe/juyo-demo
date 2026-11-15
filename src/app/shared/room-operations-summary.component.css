@@ -1,0 +1,117 @@
+:host {
+  display: block;
+  min-width: 0;
+  margin-bottom: 18px;
+}
+.operations-summary {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+.queue-card {
+  min-width: 0;
+  padding: 18px 20px 10px;
+  border: 1px solid var(--line);
+  border-radius: 13px;
+  background: #fff;
+  transition:
+    border-color 160ms,
+    background 160ms;
+}
+.queue-card.selected {
+  border-color: var(--brand-border);
+  background: var(--brand-wash);
+}
+h3 {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.5;
+  font-weight: 500;
+}
+.queue-count {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-top: 9px;
+  color: var(--ink);
+  font-size: 34px;
+  line-height: 1.2;
+  font-weight: 600;
+  letter-spacing: -1.2px;
+  font-variant-numeric: tabular-nums;
+}
+.queue-count > span {
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 400;
+  letter-spacing: 0;
+}
+.has-rooms[data-queue='available'] .queue-count,
+.has-rooms[data-queue='reserved'] .queue-count {
+  color: var(--brand-ink);
+}
+.has-rooms[data-queue='dirty'] .queue-count {
+  color: #92621b;
+}
+.has-rooms[data-queue='out_of_service'] .queue-count {
+  color: #a04b45;
+}
+button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  min-height: 36px;
+  margin-top: 9px;
+  padding: 7px 0;
+  border-top: 1px solid var(--line);
+  color: var(--brand-ink);
+  font-size: 10px;
+  font-weight: 500;
+  text-align: left;
+  transition: color 140ms;
+}
+button:hover {
+  color: var(--brand-dark);
+}
+button svg {
+  flex: none;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.25;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+@media (max-width: 1000px) {
+  .operations-summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 600px) {
+  :host {
+    margin-bottom: 14px;
+  }
+  .operations-summary {
+    gap: 10px;
+  }
+  .queue-card {
+    padding: 14px 14px 7px;
+  }
+  h3 {
+    font-size: 11px;
+  }
+  .queue-count {
+    gap: 6px;
+    font-size: 29px;
+  }
+  .queue-count > span {
+    font-size: 9px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .queue-card,
+  button {
+    transition: none;
+  }
+}

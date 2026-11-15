@@ -1,0 +1,309 @@
+:host {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+}
+.chat-period {
+  margin-left: auto;
+  font-size: 11px;
+  color: var(--muted);
+}
+.workspace {
+  background: var(--canvas);
+}
+.workspace-header {
+  min-height: 80px;
+  padding: 0 28px;
+  flex: none;
+}
+.product-name {
+  font-size: 23px;
+  font-weight: 700;
+  letter-spacing: -0.7px;
+}
+.welcome-area {
+  overflow-y: auto;
+  padding: 20px 28px 48px;
+}
+.welcome {
+  width: 100%;
+  max-width: 760px;
+  margin: auto;
+  padding: 30px;
+  border: 1px solid var(--line);
+  border-radius: 13px;
+  background: #fff;
+  box-shadow: 0 2px 3px #1b211f02;
+}
+.welcome h1 {
+  font-size: 27px;
+  font-weight: 650;
+  letter-spacing: -0.9px;
+  line-height: 1.25;
+  margin: 0 0 25px;
+}
+.prompt-grid {
+  column-gap: 28px;
+  margin-top: 25px;
+}
+.prompt {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  text-align: left;
+  padding: 16px 0;
+  border-top: 1px solid var(--line);
+  min-height: 58px;
+  font-size: 12px;
+  line-height: 1.55;
+  color: #626c65;
+  transition: color 180ms;
+}
+.prompt > app-icon {
+  width: 14px;
+  height: 14px;
+  color: #88958b;
+}
+.prompt:hover {
+  color: var(--brand-ink);
+}
+.conversation-scroll {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+  scrollbar-width: thin;
+  scrollbar-color: #d4dbd5 transparent;
+  outline-offset: -3px;
+}
+.conversation-content {
+  max-width: 900px;
+  width: calc(100% - 56px);
+  margin: 0 auto;
+  padding: 10px 0 20px;
+}
+.user-message {
+  margin: 12px 0 24px;
+}
+.user-message p {
+  background: var(--brand-soft);
+  border: 1px solid var(--brand-border);
+  border-radius: 12px 3px 12px 12px;
+  padding: 13px 17px;
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.7;
+  max-width: 85%;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+app-answer {
+  display: block;
+  margin-bottom: 24px;
+}
+.conversation-composer {
+  flex: none;
+  padding: 12px 0 20px;
+  width: 100%;
+}
+.conversation-composer > app-composer {
+  max-width: 900px;
+  width: calc(100% - 56px);
+  margin: auto;
+}
+.chat-startup-skeleton > app-skeleton:first-child {
+  margin-bottom: 25px;
+}
+.prompt-placeholder {
+  min-height: 58px;
+  display: flex;
+  align-items: center;
+  border-top: 1px solid var(--line);
+}
+.answer-placeholder {
+  margin-bottom: 24px;
+  padding: 24px;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+.answer-placeholder-identity {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 21px;
+}
+.answer-placeholder-identity app-brand-mark {
+  width: 21px;
+  height: 21px;
+  color: var(--brand);
+}
+.answer-placeholder-identity app-spinner {
+  margin-left: auto;
+  color: var(--brand-ink);
+}
+.answer-placeholder-copy {
+  display: grid;
+  gap: 12px;
+}
+.answer-placeholder-copy > app-skeleton:first-child {
+  margin-bottom: 3px;
+}
+.answer-placeholder-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin: 8px 0;
+}
+.answer-placeholder-metrics > div {
+  display: grid;
+  gap: 13px;
+  padding: 15px;
+  background: #f6f7f6;
+  border-radius: 8px;
+}
+.response-error {
+  padding: 14px;
+  border: 1px solid #ecd8d5;
+  border-radius: 10px;
+  color: #9d574e;
+  font-size: 12px;
+  line-height: 1.7;
+}
+.content-enter {
+  animation: content-in 220ms ease-out;
+}
+.message-enter {
+  animation: message-in 180ms ease-out;
+}
+@keyframes content-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes message-in {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@media (min-width: 1600px) {
+  .welcome {
+    max-width: 800px;
+    padding: 36px;
+  }
+}
+@media (max-width: 1100px) {
+  .workspace-header {
+    padding: 0 20px;
+  }
+  .welcome-area {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+  .welcome {
+    padding: 25px;
+  }
+  .conversation-content,
+  .conversation-composer > app-composer {
+    width: calc(100% - 40px);
+  }
+}
+@media (max-width: 760px) {
+  .workspace-header {
+    min-height: 68px;
+    padding: 0 12px;
+    gap: 12px;
+  }
+  .product-name {
+    font-size: 20px;
+    letter-spacing: -0.5px;
+  }
+  .welcome-area {
+    padding: 14px 10px 32px;
+  }
+  .welcome {
+    padding: 22px;
+    max-width: 600px;
+  }
+  .welcome h1 {
+    font-size: 25px;
+  }
+  .conversation-content,
+  .conversation-composer > app-composer {
+    width: calc(100% - 20px);
+  }
+  .conversation-composer {
+    padding: 10px 0 12px;
+  }
+  .conversation-content {
+    padding-top: 14px;
+  }
+  .answer-placeholder {
+    padding: 18px;
+  }
+  .answer-placeholder-metrics {
+    gap: 7px;
+  }
+  .answer-placeholder-metrics > div {
+    padding: 11px 9px;
+  }
+}
+@media (max-width: 480px) {
+  .workspace-header {
+    padding: 0 10px;
+  }
+  .welcome {
+    padding: 20px 17px;
+  }
+  .welcome h1 {
+    font-size: 24px;
+    margin-bottom: 22px;
+  }
+  .prompt-grid {
+    grid-template-columns: 1fr;
+    column-gap: 0;
+    margin-top: 22px;
+  }
+  .prompt {
+    min-height: 54px;
+    padding: 15px 0;
+  }
+  .prompt-placeholder {
+    min-height: 54px;
+  }
+  .user-message p {
+    max-width: 92%;
+    font-size: 13px;
+    padding: 12px 15px;
+  }
+}
+@media (max-width: 380px) {
+  .answer-placeholder-metrics {
+    grid-template-columns: 1fr;
+  }
+  .answer-placeholder-metrics > div {
+    grid-template-columns: 1fr 1fr;
+    align-items: center;
+    gap: 12px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .content-enter,
+  .message-enter {
+    animation: none;
+  }
+}

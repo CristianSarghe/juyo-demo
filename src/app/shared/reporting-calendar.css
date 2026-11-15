@@ -1,0 +1,20 @@
+/* Taiga owns the inner calendar DOM; scope these overrides to this picker. */
+.juyo-reporting-calendar tui-calendar-sheet {
+  display: block;
+  background: linear-gradient(to right, transparent calc(500% / 7), #f6f7f6 0);
+  border-radius: 6px;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.juyo-reporting-calendar tui-calendar-sheet .t-cell_today {
+  text-decoration: none;
+  font-weight: 600;
+}
+
+/* Range paint and markers must never interrupt the date cell's hit target. */
+.juyo-reporting-calendar tui-calendar-sheet .t-cell::before,
+.juyo-reporting-calendar tui-calendar-sheet .t-cell::after,
+.juyo-reporting-calendar tui-calendar-sheet .t-dots {
+  pointer-events: none;
+}

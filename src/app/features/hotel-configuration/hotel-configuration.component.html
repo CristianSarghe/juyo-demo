@@ -1,0 +1,70 @@
+@if (hotel(); as property) {
+  <section class="hotel-location" aria-labelledby="hotel-location-heading">
+    <div>
+      <h2 id="hotel-location-heading">Hotel address</h2>
+    </div>
+    <address>
+      @if (property.address; as address) {
+        {{ address.line1 }}
+        @if (address.line2) {
+          <br />{{ address.line2 }}
+        }
+        <br />{{ address.postalCode }} {{ property.city }}<br />{{ property.country }}
+      } @else {
+        Street address not set<br />{{ property.city }}, {{ property.country }}
+      }
+    </address>
+  </section>
+}
+<section
+  class="configuration-panel"
+  aria-labelledby="room-types-heading"
+  animate.enter="configuration-enter"
+>
+  <header class="configuration-heading flex items-center justify-between gap-4">
+    <h2 id="room-types-heading">Room types</h2>
+    <span>{{ roomTypes().length }} types · {{ roomCount() }} rooms</span>
+  </header>
+  <div class="table-scroll" tabindex="0" aria-label="Room type configuration">
+    <table>
+      <caption class="sr-only">
+        Room types, maximum guests, base rates and in-room facilities
+      </caption>
+      <thead>
+        <tr>
+          <th scope="col">Room type</th>
+          <th scope="col" class="numeric">Rooms</th>
+          <th scope="col" class="numeric">Max adults / children</th>
+          <th scope="col" class="numeric">Area</th>
+          <th scope="col" class="numeric">Base rate / night</th>
+          <th scope="col">In-room facilities</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (type of roomTypes(); track type.id) {
+          <tr>
+            <th scope="row">
+              {{ type.name }}
+              @if (portfolio()) {
+                <small>{{ hotelName(type.hotelId) }}</small>
+              }
+            </th>
+            <td class="numeric">{{ type.inventory }}</td>
+            <td class="numeric">{{ type.maxAdults }} / {{ type.maxChildren }}</td>
+            <td class="numeric">{{ type.areaM2 }} m²</td>
+            <td class="numeric">{{ money(type.baseRate) }}</td>
+            <td class="facilities">
+              @for (facility of type.facilities; track facility; let last = $last) {
+                {{ facilityLabel(facility) }}{{ last ? '' : ', ' }}
+              }
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td class="empty-cell" colspan="6">No room types for this hotel.</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</section>

@@ -1,0 +1,84 @@
+.juyo-revenue-tooltip {
+  width: min(276px, calc(100vw - 24px));
+  max-height: calc(100dvh - 24px);
+  overflow: auto;
+  border: 1px solid var(--line, #e7eae7);
+  border-radius: 12px;
+  background: var(--surface, #fff);
+  box-shadow:
+    0 14px 40px #1b211f16,
+    0 3px 9px #1b211f08;
+  color: var(--ink, #1b211f);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 11px;
+  line-height: 1.45;
+  font-variant-numeric: tabular-nums;
+  white-space: normal;
+  scrollbar-width: thin;
+}
+.juyo-revenue-tooltip,
+.juyo-revenue-tooltip * {
+  box-sizing: border-box;
+}
+.juyo-revenue-tooltip__heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px 14px 0;
+}
+.juyo-revenue-tooltip__heading h4 {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.35;
+  letter-spacing: -0.2px;
+}
+.juyo-revenue-tooltip__today {
+  padding: 3px 7px;
+  border-radius: 5px;
+  background: var(--brand-soft, #f0edfc);
+  color: var(--brand-ink, #6442a6);
+  font-size: 9px;
+  font-weight: 500;
+}
+.juyo-revenue-tooltip dt {
+  color: var(--muted, #69716c);
+  font-size: 10px;
+  font-weight: 400;
+}
+.juyo-revenue-tooltip dd {
+  margin: 0;
+}
+.juyo-revenue-tooltip__summary {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 14px;
+  margin: 13px 14px 14px;
+}
+.juyo-revenue-tooltip__summary dd {
+  margin-top: 5px;
+  font-weight: 600;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+.juyo-revenue-tooltip__revenue dd {
+  color: var(--brand-ink, #6442a6);
+  font-size: 22px;
+  letter-spacing: -0.7px;
+}
+.juyo-revenue-tooltip__occupancy {
+  padding-left: 12px;
+  border-left: 1px solid var(--line, #e7eae7);
+}
+.juyo-revenue-tooltip__occupancy dd {
+  font-size: 18px;
+  letter-spacing: -0.3px;
+}
+.juyo-revenue-tooltip__footer {
+  padding: 9px 14px;
+  border-top: 1px solid var(--line, #e7eae7);
+  color: var(--muted, #69716c);
+  font-size: 9px;
+}

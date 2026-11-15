@@ -1,0 +1,118 @@
+<button
+  #trigger
+  class="range-trigger"
+  type="button"
+  [attr.aria-label]="accessibleLabel()"
+  [title]="accessibleLabel()"
+  [tuiDropdown]="picker"
+  [tuiDropdownOpen]="open()"
+  (tuiDropdownOpenChange)="onOpenChange($event)"
+  tuiDropdownA11y
+  tuiDropdownRole="dialog"
+  tuiDropdownAlign="end"
+  tuiDropdownLimitWidth="auto"
+  [tuiDropdownOffset]="8"
+  [tuiDropdownMaxHeight]="560"
+>
+  <app-icon name="calendar" /><span>{{ label() }}</span
+  ><app-icon class="chevron" name="down" />
+</button>
+<ng-template #picker>
+  <section class="range-panel">
+    <header class="panel-heading">
+      <h2 [id]="id + '-title'">Reporting dates</h2>
+      @if (custom()) {
+        <button class="back-button" type="button" (click)="toggleCustom()">Quick ranges</button>
+      }
+    </header>
+    @if (!custom()) {
+      <div class="month-ranges" role="group" aria-label="Reporting date options">
+        <button
+          tuiAutoFocus
+          type="button"
+          (click)="chooseToday()"
+          [class.active]="isActive(today.toJSON(), today.toJSON())"
+          [attr.aria-pressed]="isActive(today.toJSON(), today.toJSON())"
+        >
+          Today
+        </button>
+        <hr class="preset-divider" />
+        @for (period of periods; track period.key) {
+          <button
+            type="button"
+            (click)="choosePreset(period.startDate, period.endDate)"
+            [class.active]="isActive(period.startDate, period.endDate)"
+            [attr.aria-pressed]="isActive(period.startDate, period.endDate)"
+          >
+            {{ period.label }}
+          </button>
+        }
+      </div>
+      <button class="custom-button" type="button" (click)="toggleCustom()" aria-expanded="false">
+        <app-icon name="calendar" />Custom dates<app-icon class="custom-arrow" name="down" />
+      </button>
+    } @else {
+      <div class="date-fields">
+        <label [for]="id + '-start'"
+          >Start date<input
+            #startInput
+            [id]="id + '-start'"
+            type="text"
+            inputmode="numeric"
+            autocomplete="off"
+            maxlength="10"
+            placeholder="DD/MM/YYYY"
+            [value]="startText()"
+            (input)="editField('start', $event)"
+            (blur)="blurField('start')"
+            (keydown.enter)="apply()"
+            [attr.aria-invalid]="startInvalid() ? 'true' : null"
+            [attr.aria-describedby]="
+              id + '-format' + (touched() && validation() ? ' ' + id + '-error' : '')
+            "
+        /></label>
+        <label [for]="id + '-end'"
+          >End date<input
+            [id]="id + '-end'"
+            type="text"
+            inputmode="numeric"
+            autocomplete="off"
+            maxlength="10"
+            placeholder="DD/MM/YYYY"
+            [value]="endText()"
+            (input)="editField('end', $event)"
+            (blur)="blurField('end')"
+            (keydown.enter)="apply()"
+            [attr.aria-invalid]="endInvalid() ? 'true' : null"
+            [attr.aria-describedby]="
+              id + '-format' + (touched() && validation() ? ' ' + id + '-error' : '')
+            "
+        /></label>
+      </div>
+      <p class="date-format" [id]="id + '-format'">Date format: DD/MM/YYYY</p>
+      @if (touched() && validation()) {
+        <p class="field-error" [id]="id + '-error'" role="status">{{ validation() }}</p>
+      }
+      <tui-calendar
+        class="juyo-reporting-calendar"
+        role="group"
+        aria-label="Date range calendar"
+        [min]="min"
+        [max]="max"
+        [minViewedMonth]="min"
+        [maxViewedMonth]="max"
+        [month]="viewedMonth()"
+        (monthChange)="viewedMonth.set($event)"
+        [value]="calendarValue()"
+        [showAdjacent]="false"
+        (dayClick)="chooseDay($event)"
+      />
+      <footer class="panel-actions">
+        <button class="cancel-button" type="button" (click)="close()">Cancel</button
+        ><button class="apply-button" type="button" (click)="apply()" [disabled]="!!validation()">
+          Apply
+        </button>
+      </footer>
+    }
+  </section>
+</ng-template>

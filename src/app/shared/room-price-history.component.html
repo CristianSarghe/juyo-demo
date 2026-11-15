@@ -1,0 +1,42 @@
+<section class="price-history" [attr.aria-labelledby]="id + '-title'">
+  <header class="history-heading">
+    <div>
+      <h3 [id]="id + '-title'">Price history</h3>
+      <p>{{ period() }} · EUR per room night</p>
+    </div>
+  </header>
+  @if (rows().length) {
+    <div class="history-legend" aria-label="Price history legend">
+      <span><i class="booked-dot"></i>Booked prices</span
+      ><span><i class="weighted-line"></i>Average booked price</span>
+      @if (hasOutsideDates()) {
+        <span><i class="outside-dates"></i>Outside interval</span>
+      }
+    </div>
+    <app-chart
+      [option]="option()"
+      [tooltipDetails]="tooltipDetails"
+      [height]="280"
+      [ariaLabel]="description()"
+    />
+    @if (scrollable()) {
+      <div class="history-pan">
+        <input
+          type="range"
+          min="0"
+          step="1"
+          aria-label="Scroll price history dates"
+          [max]="maxWindowStart()"
+          [value]="panStart()"
+          [attr.aria-valuetext]="panDescription()"
+          [title]="panDescription()"
+          [style.--pan-thumb-width.px]="thumbWidth()"
+          (input)="pan($event)"
+        /><span>{{ windowLabel() }} · {{ visibleCount() }} days</span>
+      </div>
+    }
+    <p class="history-note">
+      Average booked price = room revenue ÷ room nights, from existing bookings.
+    </p>
+  }
+</section>

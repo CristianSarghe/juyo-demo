@@ -1,0 +1,2264 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:juyo:hotel-network:2.3.0",
+  "title": "European hotel network",
+  "description": "Four geolocated hotels and 88 rooms across the complete October–December 2026 quarter, with daily room-type selling quotes, generated event fixtures and hotel-specific relevance assessments. EUR amounts exclude VAT. Selling quotes remain separate from accepted booking revenue. Past actuals, scheduled occupancy, on-the-books revenue and planned expenses remain explicit.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "meta",
+    "bookingSnapshot",
+    "reportingPeriods",
+    "dailyRoomStates",
+    "dailyCosts",
+    "dailyChannels",
+    "reservationNights",
+    "dailyFacilityActivity",
+    "hotels",
+    "events",
+    "eventHotelImpacts",
+    "roomTypes",
+    "roomRates",
+    "rooms",
+    "facilities",
+    "restaurants",
+    "costs",
+    "unitCosts",
+    "channels",
+    "dailyPerformance",
+    "reservations",
+    "bookingPositions"
+  ],
+  "properties": {
+    "meta": {
+      "$ref": "#/$defs/NetworkMeta"
+    },
+    "bookingSnapshot": {
+      "$ref": "#/$defs/BookingSnapshot"
+    },
+    "reportingPeriods": {
+      "type": "array",
+      "description": "October, November and December 2026, each with a complete calendar range.",
+      "items": {
+        "$ref": "#/$defs/ReportingPeriod"
+      }
+    },
+    "dailyRoomStates": {
+      "type": "array",
+      "description": "Every physical room on every date in the quarter, including vacant and out-of-service dates.",
+      "items": {
+        "$ref": "#/$defs/DailyRoomState"
+      }
+    },
+    "dailyCosts": {
+      "type": "array",
+      "description": "Daily actual and planned expenses. The monthly cost ledger is an exact grouping of these rows.",
+      "items": {
+        "$ref": "#/$defs/DailyCost"
+      }
+    },
+    "dailyChannels": {
+      "type": "array",
+      "description": "All four channels on every hotel stay date, reconciled to the accepted room-night ledger.",
+      "items": {
+        "$ref": "#/$defs/DailyChannel"
+      }
+    },
+    "reservationNights": {
+      "type": "array",
+      "description": "Complete accepted stay-night ledger. Each room/date can appear only once.",
+      "items": {
+        "$ref": "#/$defs/ReservationNight"
+      }
+    },
+    "dailyFacilityActivity": {
+      "type": "array",
+      "description": "Every facility on every quarter date, including zero-use days. Actual and planned activity remain separate.",
+      "items": {
+        "$ref": "#/$defs/DailyFacilityActivity"
+      }
+    },
+    "hotels": {
+      "type": "array",
+      "description": "The four hotel properties, including their WGS84 locations.",
+      "minItems": 4,
+      "maxItems": 4,
+      "items": {
+        "$ref": "#/$defs/Hotel"
+      }
+    },
+    "events": {
+      "type": "array",
+      "description": "Generated ongoing and upcoming event fixtures with venue coordinates, inclusive dates and illustrative attendance. Not live or verified event listings.",
+      "items": {
+        "$ref": "#/$defs/HotelEvent"
+      }
+    },
+    "eventHotelImpacts": {
+      "type": "array",
+      "description": "Normalized hotel-event relevance assessments, with distance, importance, rationale and explicit provenance. Events can influence more than one hotel without duplicating event records.",
+      "items": {
+        "$ref": "#/$defs/EventHotelImpact"
+      }
+    },
+    "roomTypes": {
+      "type": "array",
+      "description": "Physical inventory, capacity, reference rates and common facilities.",
+      "items": {
+        "$ref": "#/$defs/RoomType"
+      }
+    },
+    "roomRates": {
+      "type": "array",
+      "description": "One selling quote for each room type and quarter date. Current local updates override quotes; accepted reservations retain their booked rates.",
+      "items": {
+        "$ref": "#/$defs/RoomRate"
+      }
+    },
+    "rooms": {
+      "type": "array",
+      "description": "All 88 physical rooms and their November 14 operational snapshot, derived from daily states.",
+      "minItems": 88,
+      "maxItems": 88,
+      "items": {
+        "$ref": "#/$defs/Room"
+      }
+    },
+    "facilities": {
+      "type": "array",
+      "description": "Property services, capacities, local hours and guest fees.",
+      "items": {
+        "$ref": "#/$defs/Facility"
+      }
+    },
+    "restaurants": {
+      "type": "array",
+      "description": "Three full-service outlets. Porto has a breakfast lounge instead.",
+      "items": {
+        "$ref": "#/$defs/Restaurant"
+      }
+    },
+    "costs": {
+      "type": "array",
+      "description": "Monthly operating expenses grouped by hotel, category, department and actual/planned basis.",
+      "items": {
+        "$ref": "#/$defs/MonthlyCost"
+      }
+    },
+    "unitCosts": {
+      "type": "array",
+      "description": "Planning reference costs per operational unit.",
+      "items": {
+        "$ref": "#/$defs/UnitCost"
+      }
+    },
+    "channels": {
+      "type": "array",
+      "description": "Monthly room nights, room revenue and acquisition fees, separated into actual and on-the-books groups.",
+      "items": {
+        "$ref": "#/$defs/ChannelPerformance"
+      }
+    },
+    "dailyPerformance": {
+      "type": "array",
+      "description": "One row per hotel for all 92 quarter dates. Room revenue reconciles to accepted nights; facility revenues reconcile to activity.",
+      "items": {
+        "$ref": "#/$defs/DailyPerformance"
+      }
+    },
+    "reservations": {
+      "type": "array",
+      "description": "Complete one-to-four-night stays across the quarter, with excluded reservations retained for workflow and prior-snapshot reconstruction.",
+      "items": {
+        "$ref": "#/$defs/Reservation"
+      }
+    },
+    "bookingPositions": {
+      "type": "array",
+      "description": "All quarter stay-date actuals and current/prior confirmed booking aggregates, captured as of November 14.",
+      "items": {
+        "$ref": "#/$defs/BookingPosition"
+      }
+    }
+  },
+  "$defs": {
+    "Geography": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "latitude",
+        "longitude"
+      ],
+      "properties": {
+        "latitude": {
+          "type": "number",
+          "minimum": -90,
+          "maximum": 90,
+          "description": "WGS84 latitude in decimal degrees, from -90 to 90."
+        },
+        "longitude": {
+          "type": "number",
+          "minimum": -180,
+          "maximum": 180,
+          "description": "WGS84 longitude in decimal degrees, from -180 to 180."
+        }
+      }
+    },
+    "ReportingPeriod": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "key",
+        "startDate",
+        "endDate",
+        "days",
+        "label"
+      ],
+      "properties": {
+        "key": {
+          "type": "string",
+          "enum": [
+            "2026-10",
+            "2026-11",
+            "2026-12"
+          ],
+          "description": "Selected reporting month, YYYY-MM, within the covered quarter."
+        },
+        "startDate": {
+          "type": "string",
+          "format": "date",
+          "description": "First covered calendar date, inclusive."
+        },
+        "endDate": {
+          "type": "string",
+          "format": "date",
+          "description": "Last covered calendar date, inclusive."
+        },
+        "days": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Number of covered calendar dates."
+        },
+        "label": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Human-readable reporting range."
+        }
+      }
+    },
+    "RoomRate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "hotelId",
+        "roomTypeId",
+        "date",
+        "nightlyRate",
+        "currency"
+      ],
+      "properties": {
+        "hotelId": {
+          "type": "string",
+          "enum": [
+            "dev-bru",
+            "dev-ams",
+            "dev-ber",
+            "dev-opo"
+          ],
+          "description": "Hotel.id foreign key."
+        },
+        "roomTypeId": {
+          "type": "string",
+          "minLength": 1,
+          "description": "RoomType.id foreign key within the same hotel."
+        },
+        "date": {
+          "type": "string",
+          "format": "date",
+          "description": "Quoted stay date; unique with roomTypeId across the full covered quarter."
+        },
+        "nightlyRate": {
+          "type": "number",
+          "minimum": 0.01,
+          "maximum": 10000,
+          "description": "Selling quote per room per night in EUR excluding VAT, rounded to cents. Independent of booked reservation revenue and event relevance."
+        },
+        "currency": {
+          "type": "string",
+          "const": "EUR",
+          "description": "Euro selling-quote currency."
+        }
+      }
+    },
+    "DailyRoomState": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "roomId",
+        "hotelId",
+        "date",
+        "occupancy",
+        "housekeeping",
+        "maintenance",
+        "maintenanceNote",
+        "basis"
+      ],
+      "properties": {
+        "roomId": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Room.id foreign key."
+        },
+        "hotelId": {
+          "type": "string",
+          "enum": [
+            "dev-bru",
+            "dev-ams",
+            "dev-ber",
+            "dev-opo"
+          ],
+          "description": "Hotel.id foreign key."
+        },
+        "date": {
+          "type": "string",
+          "format": "date",
+          "description": "Stay date, unique with roomId."
+        },
+        "occupancy": {
+          "type": "string",
+          "enum": [
+            "available",
+            "occupied",
+            "out_of_service"
+          ],
+          "description": "Occupied, available, or excluded from sellable inventory."
+        },
+        "housekeeping": {
+          "type": "string",
+          "enum": [
+            "clean",
+            "dirty",
+            "inspected"
+          ],
+          "description": "Housekeeping state for this stay date."
+        },
+        "maintenance": {
+          "type": "string",
+          "enum": [
+            "none",
+            "reported",
+            "in_progress"
+          ],
+          "description": "Open maintenance blocks the room from sale."
+        },
+        "maintenanceNote": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Work description for open maintenance; otherwise null."
+        },
+        "basis": {
+          "type": "string",
+          "enum": [
+            "actual",
+            "scheduled"
+          ],
+          "description": "Completed actual state before asOf; scheduled state today and later."
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "occupancy": {
+                "const": "out_of_service"
+              }
+            },
+            "required": [
+              "occupancy"
+            ]
+          },
+          "then": {
+            "properties": {
+              "maintenance": {
+                "enum": [
+                  "reported",
+                  "in_progress"
+                ]
+              },
+              "housekeeping": {
+                "const": "dirty"
+              },
+              "maintenanceNote": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "occupancy": {
+                "const": "occupied"
+              }
+            },
+            "required": [
+              "occupancy"
+            ]
+          },
+          "then": {
+            "properties": {
+              "maintenance": {
+                "const": "none"
+              },
+              "housekeeping": {
+                "enum": [
+                  "clean",
+                  "dirty"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "maintenance": {
+                "const": "none"
+              }
+            },
+            "required": [
+              "maintenance"
+            ]
+          },
+          "then": {
+            "properties": {
+              "maintenanceNote": {
+                "type": "null"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "DailyCost": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "hotelId",
+        "category",
+        "department",
+        "amount",
+        "description",
+        "basis",
+        "date"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Unique expense-ledger line identifier."
+        },
+        "hotelId": {
+          "type": "string",
+          "enum": [
+            "dev-bru",
+            "dev-ams",
+            "dev-ber",
+            "dev-opo"
+          ],
+          "description": "Hotel.id foreign key."
+        },
+        "category": {
+          "type": "string",
+          "enum": [
+            "payroll",
+            "utilities",
+            "housekeeping",
+            "maintenance",
+            "admin",
+            "rent",
+            "food_beverage",
+            "channel_commission",
+            "marketing",
+            "insurance"
+          ],
+          "description": "Operating expense category."
+        },
+        "department": {
+          "type": "string",
+          "enum": [
+            "rooms",
+            "food_beverage",
+            "shared"
+          ],
+          "description": "Department charged by this expense."
+        },
+        "amount": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Expense in EUR, excluding VAT."
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1,
+          "description": "What this expense includes, to prevent double counting."
+        },
+        "basis": {
+          "type": "string",
+          "enum": [
+            "actual",
+            "planned"
+          ],
+          "description": "Completed actual expense or planned expense for today and later."
+        },
+        "date": {
+          "type": "string",
+          "format": "date",
+          "description": "Operating expense date, including zero-volume days."
+        }
+      }
+    },
+    "DailyChannel": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "hotelId",
+        "channel",
+        "soldNights",
+        "grossRevenue",
+        "commissionRate",
+        "acquisitionCost",
+        "basis",
+        "date"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Unique channel-performance group identifier."
+        },
+        "hotelId": {
+          "type": "string",
+          "enum": [
+            "dev-bru",
+            "dev-ams",
+            "dev-ber",
+            "dev-opo"
+          ],
+          "description": "Hotel.id foreign key."
+        },
+        "channel": {
+          "type": "string",
+          "enum": [
+            "direct",
+            "ota",
+            "corporate",
+            "wholesale"
+          ],
+          "description": "Source of accepted room demand."
+        },
+        "soldNights": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Accepted room nights in this channel group."
+        },
+        "grossRevenue": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Room revenue before acquisition costs, excluding VAT."
+        },
+        "commissionRate": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Acquisition fraction; 0.18 means 18%."
+        },
+        "acquisitionCost": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Acquisition cost; monthly groups sum the individually rounded daily fees."
+        },
+        "basis": {
+          "type": "string",
+          "enum": [
+            "actual",
+            "on_books"
+          ],
+          "description": "Completed actual room revenue or provisional on-the-books revenue."
+        },
+        "date": {
+          "type": "string",
+          "format": "date",
+          "description": "Stay date, unique with hotelId and channel."
+        }
+      }
+    },
+    "ReservationNight": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "reservationId",
+        "hotelId",
+        "roomId",
+        "date",
+        "channel",
+        "roomRevenue"
+      ],
+      "properties": {
+        "reservationId": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Reservation.id foreign key."
+        },
+        "hotelId": {
+          "type": "string",
+          "enum": [
+            "dev-bru",
+            "dev-ams",
+            "dev-ber",
+            "dev-opo"
+          ],
+          "description": "Hotel.id foreign key."
+        },
+        "roomId": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Assigned Room.id; unique with date across accepted reservations."
+        },
+        "date": {
+          "type": "string",
+          "format": "date",
+          "description": "Occupied stay date, inside the reservation arrival/departure range."
+        },
+        "channel": {
+          "type": "string",
+          "enum": [
+            "direct",
+            "ota",
+            "corporate",
+            "wholesale"
+          ],
+          "description": "Must match the parent reservation channel."
+        },
+        "roomRevenue": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Accepted nightly room revenue; sums exactly to the reservation value."
+        }
+      }
+    },
+    "DailyFacilityActivity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "hotelId",
+        "facilityId",
+        "date",
+        "uses",
+        "revenue",
+        "basis"
+      ],
+      "properties": {
+        "hotelId": {
+          "type": "string",
+          "enum": [
+            "dev-bru",
+            "dev-ams",
+            "dev-ber",
+            "dev-opo"
+          ],
+          "description": "Hotel.id foreign key."
+        },
+        "facilityId": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Facility.id foreign key within the same hotel."
+        },
+        "date": {
+          "type": "string",
+          "format": "date",
+          "description": "Activity date, unique with facilityId."
+        },
+        "uses": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Daily people, covers, room uses, parking nights, or hours, according to facility kind."
+        },
+        "revenue": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Daily facility revenue in EUR, excluding VAT."
+        },
+        "basis": {
+          "type": "string",
+          "enum": [
+            "actual",
+            "planned"
+          ],
+          "description": "Completed activity before asOf; planned activity today and later."
+        }
+      }
+    },
+    "NetworkMeta": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "name",
+        "schemaVersion",
+        "testData",
+        "currency",
+        "amountBasis",
+        "reportingPeriod",
+        "snapshotDate",
+        "notes"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Stable network identifier."
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Hotel network name."
+        },
+        "schemaVersion": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Dataset schema version."
+        },
+        "testData": {
+          "type": "boolean",
+          "const": true,
+          "description": "Dataset classification flag."
+        },
+        "currency": {
+          "type": "string",
+          "const": "EUR",
+          "description": "Currency for every amount in this dataset."
+        },
+        "amountBasis": {
+          "type": "string",
+          "const": "net_excluding_vat",
+          "description": "All financial amounts exclude VAT."
+        },
+        "reportingPeriod": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "startDate",
+            "endDate",
+            "days",
+            "label"
+          ],
+          "properties": {
+            "startDate": {
+              "type": "string",
+              "format": "date",
+              "description": "First reporting day, inclusive."
+            },
+            "endDate": {
+              "type": "string",
+              "format": "date",
+              "description": "Last reporting day, inclusive."
+            },
+            "days": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "Number of calendar days."
+            },
+            "label": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Human-readable reporting period."
+            }
+          },
+          "description": "Full quarter coverage: October 1 through December 31, 2026, including actual and planned rows."
+        },
+        "snapshotDate": {
+          "type": "string",
+          "format": "date",
+          "description": "Date represented by room and reservation operational states."
+        },
+        "notes": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string"
+          },
+          "description": "Accounting and reporting assumptions."
+        }
+      }
+    },
+    "BookingSnapshot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "asOf",
+        "previousAsOf",
+        "period",
+        "testData",
+        "source",
+        "includedOnBooksStatuses",
+        "excludedStatuses",
+        "notes"
+      ],
+      "properties": {
+        "asOf": {
+          "type": "string",
+          "format": "date",
+          "description": "Booking business date."
+        },
+        "previousAsOf": {
+          "type": "string",
+          "format": "date",
+          "description": "Prior booking snapshot date, seven days before asOf."
+        },
+        "period": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "startDate",
+            "endDate",
+            "days",
+            "label"
+          ],
+          "properties": {
+            "startDate": {
+              "type": "string",
+              "format": "date",
+              "description": "First stay date, inclusive."
+            },
+            "endDate": {
+              "type": "string",
+              "format": "date",
+              "description": "Last stay date, inclusive."
+            },
+            "days": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "Number of stay dates in the quarter."
+            },
+            "label": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Human-readable booking coverage."
+            }
+          },
+          "description": "Full quarter stay-date coverage; each UI month selects a complete calendar slice."
+        },
+        "testData": {
+          "type": "boolean",
+          "const": true,
+          "description": "Dataset classification flag."
+        },
+        "source": {
+          "type": "string",
+          "const": "development_aggregated_pms_positions",
+          "description": "Aggregated positions reconciled to the complete accepted reservation-night ledger."
+        },
+        "includedOnBooksStatuses": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "confirmed",
+              "checked_in"
+            ]
+          },
+          "uniqueItems": true,
+          "minItems": 2,
+          "maxItems": 2,
+          "description": "Reservation states included in current and prior on-the-books aggregates."
+        },
+        "excludedStatuses": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "cancelled",
+              "pending",
+              "no_show"
+            ]
+          },
+          "uniqueItems": true,
+          "minItems": 3,
+          "maxItems": 3,
+          "description": "States excluded from booking aggregates."
+        },
+        "notes": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string"
+          },
+          "description": "Stay-date, current-day, pickup, target and accounting semantics."
+        }
+      }
+    },
+    "BookingPosition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "hotelId",
+        "stayDate",
+        "capturedAsOf",
+        "state",
+        "roomsAvailable",
+        "actualRooms",
+        "actualRoomRevenue",
+        "roomsOnBooks",
+        "revenueOnBooks",
+        "roomsOnBooks7dAgo",
+        "revenueOnBooks7dAgo",
+        "pickup7dRoomNights",
+        "pickup7dRevenue",
+        "targetRooms",
+        "targetRevenue"
+      ],
+      "properties": {
+        "hotelId": {
+          "type": "string",
+          "enum": [
+            "dev-bru",
+            "dev-ams",
+            "dev-ber",
+            "dev-opo"
+          ],
+          "description": "Hotel.id foreign key."
+        },
+        "stayDate": {
+          "type": "string",
+          "format": "date",
+          "description": "Date of the room night; unique with hotelId."
+        },
+        "capturedAsOf": {
+          "type": "string",
+          "format": "date",
+          "description": "Business date of this fixed booking snapshot."
+        },
+        "state": {
+          "type": "string",
+          "enum": [
+            "past",
+            "today",
+            "future"
+          ],
+          "description": "Position relative to the booking snapshot business date."
+        },
+        "roomsAvailable": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Sellable physical room-night capacity for this stay date."
+        },
+        "actualRooms": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0,
+          "description": "Completed sold room nights for past dates only; null for today and future."
+        },
+        "actualRoomRevenue": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0,
+          "description": "Completed past stay-date room revenue, EUR net of VAT; null for today and future."
+        },
+        "roomsOnBooks": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0,
+          "description": "Confirmed/checked-in room nights for today and future only; null for completed dates."
+        },
+        "revenueOnBooks": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0,
+          "description": "Current confirmed/checked-in room revenue by stay date; not realized revenue or a forecast."
+        },
+        "roomsOnBooks7dAgo": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0,
+          "description": "On-the-books room nights for this same stay date at previousAsOf; null for past stay dates."
+        },
+        "revenueOnBooks7dAgo": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0,
+          "description": "On-the-books revenue for this same stay date at previousAsOf; null for past stay dates."
+        },
+        "pickup7dRoomNights": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "description": "Signed roomsOnBooks minus roomsOnBooks7dAgo; null for completed dates."
+        },
+        "pickup7dRevenue": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "description": "Signed revenueOnBooks minus revenueOnBooks7dAgo, in EUR; null for completed dates."
+        },
+        "targetRooms": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Planned sold room nights for the stay date, not above roomsAvailable."
+        },
+        "targetRevenue": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Planned room revenue for the stay date, EUR net of VAT. Not expected sales."
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "state": {
+                "const": "past"
+              }
+            },
+            "required": [
+              "state"
+            ]
+          },
+          "then": {
+            "properties": {
+              "actualRooms": {
+                "type": "integer"
+              },
+              "actualRoomRevenue": {
+                "type": "number"
+              },
+              "roomsOnBooks": {
+                "type": "null"
+              },
+              "revenueOnBooks": {
+                "type": "null"
+              },
+              "roomsOnBooks7dAgo": {
+                "type": "null"
+              },
+              "revenueOnBooks7dAgo": {
+                "type": "null"
+              },
+              "pickup7dRoomNights": {
+                "type": "null"
+              },
+              "pickup7dRevenue": {
+                "type": "null"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "state": {
+                "enum": [
+                  "today",
+                  "future"
+                ]
+              }
+            },
+            "required": [
+              "state"
+            ]
+          },
+          "then": {
+            "properties": {
+              "actualRooms": {
+                "type": "null"
+              },
+              "actualRoomRevenue": {
+                "type": "null"
+              },
+              "roomsOnBooks": {
+                "type": "integer"
+              },
+              "revenueOnBooks": {
+                "type": "number"
+              },
+              "roomsOnBooks7dAgo": {
+                "type": "integer"
+              },
+              "revenueOnBooks7dAgo": {
+                "type": "number"
+              },
+              "pickup7dRoomNights": {
+                "type": "integer"
+              },
+              "pickup7dRevenue": {
+                "type": "number"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "HotelAddress": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "line1",
+        "postalCode"
+      ],
+      "properties": {
+        "line1": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Configured street and building; fixture values are sample addresses, not verified hotel locations.",
+          "maxLength": 200
+        },
+        "line2": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1,
+          "maxLength": 200,
+          "description": "Optional additional postal address line."
+        },
+        "postalCode": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Configured postal code, with no claim of independent address verification.",
+          "maxLength": 20
+        }
+      }
+    },
+    "Hotel": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "name",
+        "city",
+        "country",
+        "coordinates",
+        "countryCode",
+        "timezone",
+        "status",
+        "category",
+        "starRating",
+        "openedYear"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "enum": [
+            "dev-bru",
+            "dev-ams",
+            "dev-ber",
+            "dev-opo"
+          ],
+          "description": "Hotel.id foreign key."
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Hotel name.",
+          "maxLength": 120
+        },
+        "city": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Hotel city."
+        },
+        "country": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Country name."
+        },
+        "coordinates": {
+          "$ref": "#/$defs/Geography",
+          "description": "Hotel location in WGS84 decimal degrees: latitude -90 to 90, longitude -180 to 180."
+        },
+        "address": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "anyOf": [
+            {
+              "$ref": "#/$defs/HotelAddress"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Optional configured postal address with line1, optional line2 and postalCode. City and country belong to the hotel. Fixture addresses are sample data and coordinates are not geocoded matches."
+        },
+        "countryCode": {
+          "type": "string",
+          "minLength": 1,
+          "description": "ISO 3166-1 alpha-2 country code.",
+          "pattern": "^[A-Z]{2}$"
+        },
+        "timezone": {
+          "type": "string",
+          "minLength": 1,
+          "description": "IANA local timezone."
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "active",
+            "renovation",
+            "closed"
+          ],
+          "description": "Property operating state."
+        },
+        "category": {
+          "type": "string",
+          "enum": [
+            "business",
+            "boutique",
+            "city"
+          ],
+          "description": "Hotel operating segment."
+        },
+        "starRating": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Hotel star category.",
+          "maximum": 5
+        },
+        "openedYear": {
+          "type": "integer",
+          "minimum": 1900,
+          "description": "Opening year.",
+          "maximum": 2026
+        }
+      }
+    },
+    "HotelEvent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "name",
+        "category",
+        "startDate",
+        "endDate",
+        "venue",
+        "city",
+        "country",
+        "coordinates",
+        "expectedAttendance"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Unique event identifier, shared by every related hotel assessment."
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Generated event name; not a verified live event listing."
+        },
+        "category": {
+          "type": "string",
+          "enum": [
+            "conference",
+            "trade_fair",
+            "concert",
+            "festival",
+            "market",
+            "sport"
+          ],
+          "description": "Event format or demand category."
+        },
+        "startDate": {
+          "type": "string",
+          "format": "date",
+          "description": "First event date, inclusive."
+        },
+        "endDate": {
+          "type": "string",
+          "format": "date",
+          "description": "Last event date, inclusive; not before startDate."
+        },
+        "venue": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Venue used by the generated event."
+        },
+        "city": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Event city."
+        },
+        "country": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Event country."
+        },
+        "coordinates": {
+          "$ref": "#/$defs/Geography",
+          "description": "Venue location in WGS84 decimal degrees: latitude -90 to 90, longitude -180 to 180."
+        },
+        "expectedAttendance": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Illustrative expected attendance, not measured attendance."
+        }
+      }
+    },
+    "EventHotelImpact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "eventId",
+        "hotelId",
+        "importance",
+        "distanceKm",
+        "reason",
+        "source",
+        "assessedAt"
+      ],
+      "properties": {
+        "eventId": {
+          "type": "string",
+          "minLength": 1,
+          "description": "HotelEvent.id foreign key; unique with hotelId."
+        },
+        "hotelId": {
+          "type": "string",
+          "enum": [
+            "dev-bru",
+            "dev-ams",
+            "dev-ber",
+            "dev-opo"
+          ],
+          "description": "Hotel.id foreign key."
+        },
+        "importance": {
+          "type": "string",
+          "enum": [
+            "mild",
+            "medium",
+            "important"
+          ],
+          "description": "Hotel-specific assessment considering proximity and event relevance; not a demand forecast."
+        },
+        "distanceKm": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Straight-line Haversine distance from hotel to venue, using Earth radius 6371 km, rounded to two decimals. Not a road distance."
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Explanation of this hotel-specific relevance assessment."
+        },
+        "source": {
+          "type": "string",
+          "enum": [
+            "fixture",
+            "kassandra"
+          ],
+          "description": "Assessment provenance. Seeded records use fixture; kassandra is reserved for a future assistant assessment."
+        },
+        "assessedAt": {
+          "type": "string",
+          "format": "date",
+          "description": "Date this assessment was made, no later than the fixed business date."
+        }
+      }
+    },
+    "RoomType": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "hotelId",
+        "name",
+        "inventory",
+        "maxAdults",
+        "maxChildren",
+        "areaM2",
+        "baseRate",
+        "facilities"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Unique room-type identifier."
+        },
+        "hotelId": {
+          "type": "string",
+          "enum": [
+            "dev-bru",
+            "dev-ams",
+            "dev-ber",
+            "dev-opo"
+          ],
+          "description": "Hotel.id foreign key."
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Room category name."
+        },
+        "inventory": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Number of physical rooms of this type."
+        },
+        "maxAdults": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Maximum adult occupancy per room."
+        },
+        "maxChildren": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Additional child occupancy per room."
+        },
+        "areaM2": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "Approximate room area in square metres."
+        },
+        "baseRate": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Reference nightly room rate, EUR net of VAT. Actual daily rates vary."
+        },
+        "facilities": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "enum": [
+              "wifi",
+              "air_conditioning",
+              "desk",
+              "coffee_machine",
+              "balcony",
+              "accessible",
+              "kitchenette",
+              "bathtub"
+            ]
+          },
+          "description": "Facilities shared by every room in this room type."
+        }
+      }
+    },
+    "Room": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "hotelId",
+        "roomTypeId",
+        "number",
+        "floor",
+        "date",
+        "basis",
+        "occupancy",
+        "housekeeping",
+        "maintenance",
+        "maintenanceNote"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Unique physical-room identifier."
+        },
+        "hotelId": {
+          "type": "string",
+          "enum": [
+            "dev-bru",
+            "dev-ams",
+            "dev-ber",
+            "dev-opo"
+          ],
+          "description": "Hotel.id foreign key."
+        },
+        "roomTypeId": {
+          "type": "string",
+          "minLength": 1,
+          "description": "RoomType.id foreign key within the same hotel."
+        },
+        "number": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Room number, unique within a hotel."
+        },
+        "floor": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Guest floor number."
+        },
+        "date": {
+          "type": "string",
+          "format": "date",
+          "description": "Current room-state snapshot date, derived from dailyRoomStates."
+        },
+        "basis": {
+          "type": "string",
+          "enum": [
+            "actual",
+            "scheduled"
+          ],
+          "description": "Current state basis, using the same calendar boundary as daily room states."
+        },
+        "occupancy": {
+          "type": "string",
+          "enum": [
+            "available",
+            "occupied",
+            "out_of_service"
+          ],
+          "description": "Snapshot room availability or occupancy."
+        },
+        "housekeeping": {
+          "type": "string",
+          "enum": [
+            "clean",
+            "dirty",
+            "inspected"
+          ],
+          "description": "Snapshot housekeeping state, independent of occupancy."
+        },
+        "maintenance": {
+          "type": "string",
+          "enum": [
+            "none",
+            "reported",
+            "in_progress"
+          ],
+          "description": "Snapshot maintenance work state."
+        },
+        "maintenanceNote": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Short work description when maintenance is open, otherwise null."
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "occupancy": {
+                "const": "out_of_service"
+              }
+            },
+            "required": [
+              "occupancy"
+            ]
+          },
+          "then": {
+            "properties": {
+              "maintenance": {
+                "enum": [
+                  "reported",
+                  "in_progress"
+                ]
+              },
+              "housekeeping": {
+                "const": "dirty"
+              },
+              "maintenanceNote": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "occupancy": {
+                "const": "occupied"
+              }
+            },
+            "required": [
+              "occupancy"
+            ]
+          },
+          "then": {
+            "properties": {
+              "housekeeping": {
+                "enum": [
+                  "clean",
+                  "dirty"
+                ]
+              },
+              "maintenance": {
+                "const": "none"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "maintenance": {
+                "const": "none"
+              }
+            },
+            "required": [
+              "maintenance"
+            ]
+          },
+          "then": {
+            "properties": {
+              "maintenanceNote": {
+                "type": "null"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "Facility": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "hotelId",
+        "kind",
+        "name",
+        "capacity",
+        "openingHours",
+        "fee",
+        "feeUnit"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Unique facility identifier."
+        },
+        "hotelId": {
+          "type": "string",
+          "enum": [
+            "dev-bru",
+            "dev-ams",
+            "dev-ber",
+            "dev-opo"
+          ],
+          "description": "Hotel.id foreign key."
+        },
+        "kind": {
+          "type": "string",
+          "enum": [
+            "wifi",
+            "parking",
+            "gym",
+            "meeting_room",
+            "spa",
+            "pool",
+            "bar",
+            "restaurant",
+            "breakfast_lounge"
+          ],
+          "description": "Facility or guest-service category."
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Facility name."
+        },
+        "capacity": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1,
+          "description": "People or spaces, as appropriate; null when not capacity-limited."
+        },
+        "openingHours": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Local opening hours, including service windows."
+        },
+        "fee": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Published reference guest fee, EUR net of VAT."
+        },
+        "feeUnit": {
+          "type": "string",
+          "enum": [
+            "included",
+            "per_hour",
+            "per_day",
+            "per_night",
+            "per_person"
+          ],
+          "description": "Basis of the listed guest fee; included means zero fee."
+        }
+      }
+    },
+    "Restaurant": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "hotelId",
+        "name",
+        "cuisine",
+        "seats",
+        "openingHours",
+        "breakfastPrice",
+        "averageCheck"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Unique restaurant identifier, also the matching restaurant Facility.id."
+        },
+        "hotelId": {
+          "type": "string",
+          "enum": [
+            "dev-bru",
+            "dev-ams",
+            "dev-ber",
+            "dev-opo"
+          ],
+          "description": "Hotel.id foreign key."
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Outlet name."
+        },
+        "cuisine": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Cuisine."
+        },
+        "seats": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Seated outlet capacity."
+        },
+        "openingHours": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Local breakfast, lunch and dinner service windows."
+        },
+        "breakfastPrice": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Breakfast selling price per person, EUR net of VAT."
+        },
+        "averageCheck": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Average lunch/dinner spend per cover, excluding breakfast."
+        }
+      }
+    },
+    "MonthlyCost": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "hotelId",
+        "category",
+        "department",
+        "amount",
+        "description",
+        "basis",
+        "period"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Unique expense-ledger line identifier."
+        },
+        "hotelId": {
+          "type": "string",
+          "enum": [
+            "dev-bru",
+            "dev-ams",
+            "dev-ber",
+            "dev-opo"
+          ],
+          "description": "Hotel.id foreign key."
+        },
+        "category": {
+          "type": "string",
+          "enum": [
+            "payroll",
+            "utilities",
+            "housekeeping",
+            "maintenance",
+            "admin",
+            "rent",
+            "food_beverage",
+            "channel_commission",
+            "marketing",
+            "insurance"
+          ],
+          "description": "Operating expense category."
+        },
+        "department": {
+          "type": "string",
+          "enum": [
+            "rooms",
+            "food_beverage",
+            "shared"
+          ],
+          "description": "Department charged by this expense."
+        },
+        "amount": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Expense in EUR, excluding VAT."
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1,
+          "description": "What this expense includes, to prevent double counting."
+        },
+        "basis": {
+          "type": "string",
+          "enum": [
+            "actual",
+            "planned"
+          ],
+          "description": "Completed actual expense or planned expense for today and later."
+        },
+        "period": {
+          "type": "string",
+          "enum": [
+            "2026-10",
+            "2026-11",
+            "2026-12"
+          ],
+          "description": "Selected reporting month, YYYY-MM, within the covered quarter."
+        }
+      }
+    },
+    "UnitCost": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "hotelId",
+        "basis",
+        "amount",
+        "description"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Unique planning unit-cost identifier."
+        },
+        "hotelId": {
+          "type": "string",
+          "enum": [
+            "dev-bru",
+            "dev-ams",
+            "dev-ber",
+            "dev-opo"
+          ],
+          "description": "Hotel.id foreign key."
+        },
+        "basis": {
+          "type": "string",
+          "enum": [
+            "occupied_room",
+            "breakfast",
+            "staff_hour",
+            "parking_night"
+          ],
+          "description": "Physical unit used by the planning rate."
+        },
+        "amount": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Planning cost per unit, EUR net of VAT."
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Scope of the planning cost. Not an extra ledger expense."
+        }
+      }
+    },
+    "ChannelPerformance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "hotelId",
+        "channel",
+        "soldNights",
+        "grossRevenue",
+        "commissionRate",
+        "acquisitionCost",
+        "basis",
+        "period"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Unique channel-performance group identifier."
+        },
+        "hotelId": {
+          "type": "string",
+          "enum": [
+            "dev-bru",
+            "dev-ams",
+            "dev-ber",
+            "dev-opo"
+          ],
+          "description": "Hotel.id foreign key."
+        },
+        "channel": {
+          "type": "string",
+          "enum": [
+            "direct",
+            "ota",
+            "corporate",
+            "wholesale"
+          ],
+          "description": "Source of accepted room demand."
+        },
+        "soldNights": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Accepted room nights in this channel group."
+        },
+        "grossRevenue": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Room revenue before acquisition costs, excluding VAT."
+        },
+        "commissionRate": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Acquisition fraction; 0.18 means 18%."
+        },
+        "acquisitionCost": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Acquisition cost; monthly groups sum the individually rounded daily fees."
+        },
+        "basis": {
+          "type": "string",
+          "enum": [
+            "actual",
+            "on_books"
+          ],
+          "description": "Completed actual room revenue or provisional on-the-books revenue."
+        },
+        "period": {
+          "type": "string",
+          "enum": [
+            "2026-10",
+            "2026-11",
+            "2026-12"
+          ],
+          "description": "Selected reporting month, YYYY-MM, within the covered quarter."
+        }
+      }
+    },
+    "DailyPerformance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "hotelId",
+        "date",
+        "roomsAvailable",
+        "soldNights",
+        "roomRevenue",
+        "restaurantRevenue",
+        "restaurantCovers",
+        "otherRevenue",
+        "budgetSoldNights",
+        "budgetRoomRevenue",
+        "basis",
+        "ancillaryBasis"
+      ],
+      "properties": {
+        "hotelId": {
+          "type": "string",
+          "enum": [
+            "dev-bru",
+            "dev-ams",
+            "dev-ber",
+            "dev-opo"
+          ],
+          "description": "Hotel.id foreign key."
+        },
+        "date": {
+          "type": "string",
+          "format": "date",
+          "description": "Reporting day; unique with hotelId."
+        },
+        "roomsAvailable": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Sellable physical rooms that day, after out-of-service exclusions."
+        },
+        "soldNights": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Sold room nights for the day, at most roomsAvailable."
+        },
+        "roomRevenue": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Daily room revenue, before acquisition costs and net of VAT."
+        },
+        "restaurantRevenue": {
+          "type": "number",
+          "minimum": 0,
+          "description": "All restaurant service revenue, including breakfast; zero where no restaurant exists."
+        },
+        "restaurantCovers": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "All restaurant service covers; zero where no restaurant exists."
+        },
+        "otherRevenue": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Revenue from all non-restaurant facilities, including the Porto breakfast lounge."
+        },
+        "budgetSoldNights": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Planned room nights, at most roomsAvailable."
+        },
+        "budgetRoomRevenue": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Planned room revenue, net of VAT."
+        },
+        "basis": {
+          "type": "string",
+          "enum": [
+            "actual",
+            "on_books"
+          ],
+          "description": "Completed room revenue before asOf; on-the-books room revenue today and later."
+        },
+        "ancillaryBasis": {
+          "type": "string",
+          "enum": [
+            "actual",
+            "planned"
+          ],
+          "description": "Completed restaurant/other activity before asOf; planned activity today and later."
+        }
+      }
+    },
+    "Reservation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "hotelId",
+        "roomTypeId",
+        "roomId",
+        "guestRef",
+        "channel",
+        "status",
+        "arrival",
+        "departure",
+        "adults",
+        "children",
+        "roomRevenue",
+        "currency",
+        "bookedOn",
+        "cancelledOn",
+        "quotedNightlyRate",
+        "quotedRevenue"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Unique reservation workflow identifier."
+        },
+        "hotelId": {
+          "type": "string",
+          "enum": [
+            "dev-bru",
+            "dev-ams",
+            "dev-ber",
+            "dev-opo"
+          ],
+          "description": "Hotel.id foreign key."
+        },
+        "roomTypeId": {
+          "type": "string",
+          "minLength": 1,
+          "description": "RoomType.id foreign key in the same hotel."
+        },
+        "roomId": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Assigned Room.id in the same hotel and room type; null when unassigned."
+        },
+        "guestRef": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Guest reference.",
+          "pattern": "^GUEST-\\d{3,}$"
+        },
+        "channel": {
+          "type": "string",
+          "enum": [
+            "direct",
+            "ota",
+            "corporate",
+            "wholesale"
+          ],
+          "description": "Reservation acquisition channel."
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "confirmed",
+            "checked_in",
+            "checked_out",
+            "cancelled",
+            "no_show",
+            "pending"
+          ],
+          "description": "Reservation workflow state at the snapshot date."
+        },
+        "arrival": {
+          "type": "string",
+          "format": "date",
+          "description": "Arrival date, inclusive."
+        },
+        "departure": {
+          "type": "string",
+          "format": "date",
+          "description": "Departure date, exclusive and after arrival."
+        },
+        "adults": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Number of adults, within the room-type capacity."
+        },
+        "children": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Number of children, within the room-type capacity."
+        },
+        "roomRevenue": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Accepted stay value, exactly equal to reservationNights; zero for cancelled, no-show and pending records."
+        },
+        "currency": {
+          "type": "string",
+          "const": "EUR",
+          "description": "Reservation amount currency."
+        },
+        "bookedOn": {
+          "type": "string",
+          "format": "date",
+          "description": "Creation date used to reconstruct prior on-the-books positions."
+        },
+        "cancelledOn": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date",
+          "description": "Cancellation date; null when no cancellation has occurred."
+        },
+        "quotedNightlyRate": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Quoted room-night rate, including the historical quote on an excluded reservation."
+        },
+        "quotedRevenue": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Quoted full stay value before any cancellation; preserves prior-snapshot value."
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "checked_in"
+              }
+            },
+            "required": [
+              "status"
+            ]
+          },
+          "then": {
+            "properties": {
+              "roomId": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "enum": [
+                  "cancelled",
+                  "no_show",
+                  "pending"
+                ]
+              }
+            },
+            "required": [
+              "status"
+            ]
+          },
+          "then": {
+            "properties": {
+              "roomRevenue": {
+                "const": 0
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

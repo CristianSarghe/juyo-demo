@@ -1,0 +1,118 @@
+<main class="workspace flex min-h-0 min-w-0 flex-1 flex-col">
+  <header class="workspace-header flex items-center gap-4">
+    <div class="product-name">Kassandra</div>
+    <span class="chat-period">{{ reporting.period().label }}</span>
+  </header>
+  @if (chat.loading() && !chat.conversations().length) {
+    <div class="welcome-area flex min-h-0 flex-1" aria-busy="true" aria-label="Loading chat">
+      <section class="welcome chat-startup-skeleton" aria-hidden="true">
+        <app-skeleton width="42%" height="28px" />
+        <app-skeleton height="72px" radius="12px" />
+        <div class="prompt-grid grid grid-cols-2">
+          @for (width of ['82%', '94%', '72%', '88%']; track $index) {
+            <div class="prompt-placeholder"><app-skeleton [width]="width" height="12px" /></div>
+          }
+        </div>
+      </section>
+    </div>
+  } @else if (!chat.activeConversation() && !responding()) {
+    <div class="welcome-area flex min-h-0 flex-1">
+      <section class="welcome" animate.enter="content-enter">
+        <h1>Ask Kassandra</h1>
+        <app-composer
+          [busy]="responding()"
+          [disabled]="chat.loading()"
+          (submitPrompt)="send($event)"
+          (stop)="chat.stop()"
+        />
+        @if (error() || chat.error()) {
+          <p class="response-error" role="alert">{{ error() || chat.error() }}</p>
+        }
+        <div class="prompt-grid grid grid-cols-2" role="group" aria-label="Example questions">
+          @for (prompt of prompts(); track prompt) {
+            <button
+              class="prompt"
+              type="button"
+              (click)="send(prompt)"
+              [disabled]="chat.loading() || responding()"
+            >
+              <span>{{ prompt }}</span
+              ><app-icon name="arrow" />
+            </button>
+          }
+        </div>
+      </section>
+    </div>
+  } @else {
+    <div
+      #feed
+      class="conversation-scroll"
+      tabindex="0"
+      aria-label="Conversation"
+      [attr.aria-busy]="responding() ? true : null"
+    >
+      <div class="conversation-content">
+        @if (!chat.messages().length && pendingPrompt()) {
+          <div class="user-message flex justify-end" animate.enter="message-enter">
+            <p>{{ pendingPrompt() }}</p>
+          </div>
+        }
+        @for (message of chat.messages(); track message.id) {
+          @if (message.role === 'user') {
+            <div
+              class="user-message flex justify-end"
+              [attr.data-message-id]="message.id"
+              animate.enter="message-enter"
+            >
+              <p>{{ message.content }}</p>
+            </div>
+          } @else {
+            <app-answer
+              [message]="message"
+              [attr.data-message-id]="message.id"
+              animate.enter="message-enter"
+            />
+          }
+        }
+        @if (responding()) {
+          <section
+            class="answer-placeholder"
+            aria-label="Preparing answer"
+            animate.enter="message-enter"
+          >
+            <div class="answer-placeholder-identity">
+              <app-brand-mark /><span>Kassandra</span><app-spinner size="sm" [decorative]="true" />
+            </div>
+            <div class="answer-placeholder-copy" aria-hidden="true">
+              <app-skeleton width="58%" height="22px" />
+              <app-skeleton width="94%" height="12px" />
+              <app-skeleton width="75%" height="12px" />
+              <div class="answer-placeholder-metrics">
+                @for (width of ['72%', '58%', '68%']; track $index) {
+                  <div>
+                    <app-skeleton [width]="width" height="10px" />
+                    <app-skeleton width="64%" height="24px" />
+                  </div>
+                }
+              </div>
+              <app-skeleton width="86%" height="12px" />
+              <app-skeleton width="67%" height="12px" />
+            </div>
+          </section>
+        }
+        @if (error() || chat.error()) {
+          <p class="response-error" role="alert">{{ error() || chat.error() }}</p>
+        }
+      </div>
+    </div>
+    <div class="conversation-composer">
+      <app-composer
+        [busy]="responding()"
+        [disabled]="chat.loading()"
+        (submitPrompt)="send($event)"
+        (stop)="chat.stop()"
+      />
+    </div>
+    <span class="sr-only" role="status">{{ responding() ? 'Preparing answer.' : 'Ready.' }}</span>
+  }
+</main>

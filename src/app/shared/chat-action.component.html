@@ -1,0 +1,174 @@
+<section class="proposed-change" [attr.aria-busy]="busy()" aria-label="Proposed change">
+  @if (action(); as change) {
+    @if (change.kind === 'rate_batch_update') {
+      <div class="batch-counts">
+        <h4>
+          {{ batchUpdates().length }}
+          {{ batchUpdates().length === 1 ? 'price change' : 'price changes' }}
+        </h4>
+        <span
+          >{{ roomTypeCount() }} {{ roomTypeCount() === 1 ? 'room type' : 'room types' }} ·
+          {{ batchGroups().length }} {{ batchGroups().length === 1 ? 'hotel' : 'hotels' }}</span
+        >
+      </div>
+      <p class="review-caption">Current → proposed · per night</p>
+      <div
+        class="rate-review"
+        role="region"
+        tabindex="0"
+        aria-label="All proposed nightly price changes"
+      >
+        @for (hotel of batchGroups(); track hotel.id) {
+          <section class="hotel-review" [attr.aria-label]="hotel.name">
+            <h5>{{ hotel.name }}</h5>
+            @for (type of hotel.roomTypes; track type.id) {
+              <section class="type-review" [attr.aria-label]="type.name">
+                <h6>{{ type.name }}</h6>
+                <dl class="price-comparisons">
+                  @for (update of type.updates; track update.startDate + '/' + update.endDate) {
+                    <div class="rate-row">
+                      <dt>
+                        <span>{{ formatRange(update.startDate, update.endDate) }}</span>
+                        <small
+                          >{{ nights(update) }}
+                          {{ nights(update) === 1 ? 'night' : 'nights' }}</small
+                        >
+                      </dt>
+                      <dd>
+                        <span class="price-before">
+                          <span class="sr-only">Current nightly rate: </span
+                          >{{ update.currentMinRate | currency: 'EUR' : 'symbol' : '1.2-2' }}
+                          @if (update.currentMinRate !== update.currentMaxRate) {
+                            <span
+                              >–{{
+                                update.currentMaxRate | currency: 'EUR' : 'symbol' : '1.2-2'
+                              }}</span
+                            >
+                          }
+                        </span>
+                        <span class="price-arrow" aria-hidden="true">→</span>
+                        <strong
+                          ><span class="sr-only">Proposed nightly rate: </span
+                          >{{ update.nightlyRate | currency: 'EUR' : 'symbol' : '1.2-2' }}</strong
+                        >
+                      </dd>
+                      @if (update.reason && !commonReason()) {
+                        <dd class="row-reason">{{ update.reason }}</dd>
+                      }
+                    </div>
+                  }
+                </dl>
+              </section>
+            }
+          </section>
+        }
+      </div>
+      @if (commonReason()) {
+        <p class="batch-reason">{{ commonReason() }}</p>
+      }
+    } @else {
+      <h4>{{ change.summary }}</h4>
+      <dl>
+        <div>
+          <dt>Hotel</dt>
+          <dd>{{ change.details.hotelName }}</dd>
+        </div>
+        @if (change.kind === 'rate_update') {
+          <div>
+            <dt>Room type</dt>
+            <dd>{{ change.details.roomTypeName }}</dd>
+          </div>
+          <div>
+            <dt>Dates</dt>
+            <dd>{{ formatRange(change.details.startDate, change.details.endDate) }}</dd>
+          </div>
+          <div class="rate">
+            <dt>Per night</dt>
+            <dd>{{ change.details.nightlyRate | currency: 'EUR' : 'symbol' : '1.2-2' }}</dd>
+          </div>
+        } @else {
+          <div>
+            <dt>Room</dt>
+            <dd>{{ change.details.roomNumber }}</dd>
+          </div>
+          <div>
+            <dt>Date</dt>
+            <dd>{{ formatDate(change.details.date) }}</dd>
+          </div>
+          <div>
+            <dt>Change</dt>
+            <dd>{{ roomActionLabel(change.details.action) }}</dd>
+          </div>
+        }
+      </dl>
+    }
+    @if (change.status === 'pending') {
+      @if (change.kind === 'rate_batch_update') {
+        <p class="confirmation-question">
+          {{
+            batchUpdates().length === 1
+              ? 'Apply this price change?'
+              : 'Apply all ' + batchUpdates().length + ' price changes?'
+          }}
+        </p>
+        <p>
+          {{
+            batchUpdates().length === 1
+              ? 'Existing bookings keep their rates.'
+              : 'All changes apply together. Existing bookings keep their rates.'
+          }}
+        </p>
+      } @else {
+        <p class="confirmation-question">
+          {{ change.kind === 'rate_update' ? 'Apply this price change?' : 'Apply this change?' }}
+        </p>
+        @if (change.kind === 'rate_update') {
+          <p>Existing bookings keep their rates.</p>
+        }
+      }
+      <div class="decision-actions">
+        <button
+          type="button"
+          class="apply-change"
+          [disabled]="disabled() || busy()"
+          (click)="decision.emit('apply')"
+        >
+          @if (busy()) {
+            <app-spinner size="sm" [decorative]="true" />
+          } @else {
+            <app-brand-mark />
+          }
+          {{
+            change.kind === 'rate_batch_update' && batchUpdates().length > 1
+              ? 'Apply all changes'
+              : 'Apply change'
+          }}
+        </button>
+        <button
+          type="button"
+          class="cancel-change"
+          [disabled]="disabled() || busy()"
+          (click)="decision.emit('cancel')"
+        >
+          Cancel
+        </button>
+      </div>
+    } @else {
+      <p class="decision-status" role="status">
+        @if (change.kind === 'rate_batch_update') {
+          {{
+            change.status === 'applied'
+              ? batchUpdates().length === 1
+                ? 'Price change applied'
+                : 'All ' + batchUpdates().length + ' price changes applied'
+              : batchUpdates().length === 1
+                ? 'Price change cancelled'
+                : 'Price changes cancelled'
+          }}
+        } @else {
+          {{ change.status === 'applied' ? 'Change applied' : 'Change cancelled' }}
+        }
+      </p>
+    }
+  }
+</section>

@@ -1,0 +1,54 @@
+<button
+  class="room-action-trigger"
+  type="button"
+  [disabled]="disabled() || pending()"
+  [attr.aria-busy]="pending() ? true : null"
+  [attr.aria-label]="'Manage room ' + room().number + ' · ' + hotelName()"
+  [tuiDropdown]="actionsMenu"
+  [(tuiDropdownOpen)]="open"
+  tuiDropdownA11y
+  tuiDropdownRole="menu"
+  tuiDropdownAlign="end"
+  tuiDropdownLimitWidth="auto"
+  [tuiDropdownOffset]="6"
+  [tuiDropdownMaxHeight]="380"
+>
+  {{ pending() ? 'Saving…' : 'Actions' }}
+  @if (pending()) {
+    <app-spinner size="sm" [decorative]="true" />
+  } @else {
+    <svg viewBox="0 0 16 16" width="13" height="13" aria-hidden="true">
+      <path d="m5 6.5 3 3 3-3" />
+    </svg>
+  }
+</button>
+
+<ng-template #actionsMenu>
+  <section class="room-action-menu" [attr.aria-label]="'Actions for room ' + room().number">
+    <header>
+      <h3>Room {{ room().number }}</h3>
+      <span>{{ hotelName() }}</span>
+    </header>
+    <tui-data-list class="room-action-list" size="s">
+      @for (item of items(); track item.value; let first = $first) {
+        <button
+          tuiOption
+          type="button"
+          role="menuitem"
+          [tuiAutoFocus]="first"
+          [disabled]="disabled() || item.disabled || false"
+          [class.reset-action]="item.value === 'reset'"
+          (click)="choose(item)"
+        >
+          <span>{{ item.label }}</span>
+          @if (item.note) {
+            <small>{{ item.note }}</small>
+          }
+        </button>
+      }
+    </tui-data-list>
+    @if (occupied()) {
+      <p class="occupied-note">Occupied rooms keep their booking.</p>
+    }
+  </section>
+</ng-template>

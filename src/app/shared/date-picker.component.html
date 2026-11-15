@@ -1,0 +1,66 @@
+<button
+  #trigger
+  class="date-trigger"
+  type="button"
+  [disabled]="disabled()"
+  [attr.aria-label]="accessibleLabel()"
+  [attr.aria-describedby]="hint() ? id + '-hint' : null"
+  [title]="accessibleLabel()"
+  [tuiDropdown]="picker"
+  [tuiDropdownEnabled]="!disabled()"
+  [tuiDropdownOpen]="open()"
+  (tuiDropdownOpenChange)="onOpenChange($event)"
+  tuiDropdownA11y
+  tuiDropdownRole="dialog"
+  tuiDropdownAlign="end"
+  tuiDropdownLimitWidth="auto"
+  [tuiDropdownOffset]="8"
+  [tuiDropdownMaxHeight]="560"
+>
+  <app-icon name="calendar" /><span>{{ displayValue() }}</span
+  ><app-icon class="chevron" name="down" />
+</button>
+@if (hint()) {
+  <p class="date-hint" [id]="id + '-hint'">{{ hint() }}</p>
+}
+<ng-template #picker>
+  <section class="date-panel">
+    <h2 [id]="id + '-title'">{{ label() }}</h2>
+    <label class="date-field" [for]="id + '-input'"
+      >Date
+      <input
+        tuiAutoFocus
+        [id]="id + '-input'"
+        type="text"
+        inputmode="numeric"
+        autocomplete="off"
+        maxlength="10"
+        placeholder="DD/MM/YYYY"
+        [value]="draftText()"
+        (input)="editField($event)"
+        (blur)="blurField()"
+        (keydown.enter)="$event.preventDefault(); apply()"
+        [attr.aria-invalid]="showError() ? 'true' : null"
+        [attr.aria-describedby]="id + '-format' + (showError() ? ' ' + id + '-error' : '')"
+      />
+    </label>
+    <p class="date-format" [id]="id + '-format'">DD/MM/YYYY · {{ boundsLabel() }}</p>
+    @if (showError()) {
+      <p class="field-error" [id]="id + '-error'" role="status">{{ validation() }}</p>
+    }
+    <tui-calendar
+      class="juyo-reporting-calendar"
+      role="group"
+      [attr.aria-label]="label() + ' calendar; or enter a date above'"
+      [min]="minDay()"
+      [max]="maxDay()"
+      [minViewedMonth]="minDay()"
+      [maxViewedMonth]="maxDay()"
+      [month]="viewedMonth()"
+      (monthChange)="viewedMonth.set($event)"
+      [value]="calendarValue()"
+      [showAdjacent]="false"
+      (dayClick)="chooseDay($event)"
+    />
+  </section>
+</ng-template>

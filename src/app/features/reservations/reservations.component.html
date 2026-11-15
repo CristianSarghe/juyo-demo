@@ -1,0 +1,83 @@
+<section
+  class="reservations-panel"
+  aria-labelledby="staying-tonight-title"
+  animate.enter="panel-enter"
+>
+  <header class="section-heading flex items-center justify-between gap-4">
+    <h2 id="staying-tonight-title">Staying tonight</h2>
+    <span>{{ formatDate(date) }} · {{ reservations().length }} stays</span>
+  </header>
+  <p class="section-note">Room revenue covers the full stay.</p>
+  <div class="table-scroll" tabindex="0" aria-label="Reservations staying tonight">
+    <table>
+      <thead>
+        <tr>
+          <th scope="col">Reference</th>
+          <th scope="col">Hotel / room</th>
+          <th scope="col">Arrival / departure</th>
+          <th scope="col">Guests</th>
+          <th scope="col">Channel</th>
+          <th scope="col">State</th>
+          <th scope="col" class="numeric">Room revenue</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (reservation of pageReservations(); track reservation.id) {
+          <tr>
+            <th scope="row">
+              <code>{{ reference(reservation.id) }}</code>
+              <small>{{ reservation.guestRef }}</small>
+            </th>
+            <td>
+              {{ city(reservation.hotelId) }}
+              <small
+                >{{ assignedRoom(reservation.roomId) }} ·
+                {{ roomTypeName(reservation.roomTypeId) }}</small
+              >
+            </td>
+            <td>{{ formatDate(reservation.arrival) }} / {{ formatDate(reservation.departure) }}</td>
+            <td>
+              {{ reservation.adults }} {{ reservation.adults === 1 ? 'adult' : 'adults' }}
+              @if (reservation.children) {
+                , {{ reservation.children }} {{ reservation.children === 1 ? 'child' : 'children' }}
+              }
+            </td>
+            <td>{{ label(reservation.channel) }}</td>
+            <td>
+              <span class="state" [attr.data-state]="reservation.status">{{
+                label(reservation.status)
+              }}</span>
+            </td>
+            <td class="numeric">{{ money(reservation.roomRevenue) }}</td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="7" class="empty-cell">No reservations for this night.</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+  <footer class="pagination flex items-center justify-between gap-4">
+    <span>{{ firstRow() }}–{{ lastRow() }} of {{ reservations().length }} stays</span>
+    <div class="flex items-center gap-3">
+      <button
+        type="button"
+        aria-label="Previous reservations"
+        [disabled]="page() === 0"
+        (click)="turnPage(-1)"
+      >
+        Previous
+      </button>
+      <span>{{ page() + 1 }} / {{ pageCount() }}</span>
+      <button
+        type="button"
+        aria-label="Next reservations"
+        [disabled]="page() + 1 >= pageCount()"
+        (click)="turnPage(1)"
+      >
+        Next
+      </button>
+    </div>
+  </footer>
+</section>

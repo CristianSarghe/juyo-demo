@@ -1,0 +1,279 @@
+@if (needsHotel()) {
+  <main class="hotel-selection-page" animate.enter="panel-enter">
+    <app-hotel-selection (selected)="confirmHotel($event)" />
+  </main>
+} @else {
+  <main class="network-page px-4 py-5 md:px-7 md:py-7" animate.enter="panel-enter">
+    <header class="page-heading flex items-center justify-between gap-4">
+      <div>
+        <h1 id="network-page-title" tabindex="-1">{{ pageTitle() }}</h1>
+        <p>
+          {{ scope() === 'portfolio' ? network.hotels.length + ' hotels' : selectedHotel()?.city }}
+          @if (roomCount() !== null) {
+            · {{ roomCount() }} rooms
+          }
+        </p>
+      </div>
+      @if (view() === 'overview') {
+        <div class="header-controls flex items-center gap-2">
+          <app-date-range-picker
+            class="range-select"
+            [value]="reporting.dashboardRange()"
+            (valueChange)="setDashboardRange($event)"
+          />
+        </div>
+      }
+    </header>
+    @if (pageError()) {
+      <section class="page-data-error" role="alert">
+        <p>{{ pageError() }}</p>
+        <button type="button" (click)="retryPage()">Try again</button>
+      </section>
+    } @else if (!pageReady()) {
+      <app-page-skeleton [view]="view()" [contentOnly]="true" />
+    } @else {
+      @if (view() === 'rooms') {
+        <nav class="room-sections" aria-label="Room management sections">
+          <a
+            routerLink="/network"
+            [queryParams]="{ view: 'rooms', section: null, room: null }"
+            queryParamsHandling="merge"
+            [class.selected]="roomSection() === 'inventory'"
+            [attr.aria-current]="roomSection() === 'inventory' ? 'page' : null"
+            >Rooms</a
+          >
+          <a
+            routerLink="/network"
+            [queryParams]="{ view: 'rooms', section: 'prices', room: null }"
+            queryParamsHandling="merge"
+            [class.selected]="roomSection() === 'prices'"
+            [attr.aria-current]="roomSection() === 'prices' ? 'page' : null"
+            >Room prices</a
+          >
+        </nav>
+      }
+      @switch (view()) {
+        @case ('overview') {
+          @defer (on immediate) {
+            <app-dashboard
+              [scope]="scope()"
+              [range]="reporting.dashboardRange()"
+              (selectHotel)="setScope($event)"
+              [initialDrillDate]="inspectedDay()"
+              (inspectDay)="inspectedDay.set($event)"
+            />
+          } @placeholder {
+            <app-page-skeleton view="overview" [contentOnly]="true" />
+          }
+        }
+        @case ('rooms') {
+          @if (roomSection() === 'prices') {
+            @defer (on immediate) {
+              <app-room-prices
+                [restoreDateFocus]="priceDateFocus()"
+                (dateChange)="priceDateFocus.set($event)"
+                (dateFocusRestored)="priceDateFocus.set(null)"
+              />
+            } @placeholder {
+              <app-page-skeleton view="rooms" [contentOnly]="true" />
+            }
+          } @else {
+            <app-room-operations-summary
+              [counts]="roomCounts()"
+              [active]="activeRoomQueue()"
+              (selectQueue)="showRoomQueue($event)"
+            />
+            @if (repairImpact(); as impact) {
+              <section
+                class="repair-banner"
+                aria-label="Kassandra repair suggestion"
+                animate.enter="panel-enter"
+              >
+                <app-kassandra-note>
+                  <div class="repair-message">
+                    <div class="repair-banner-copy">
+                      <p>
+                        <strong
+                          >{{ impact.rooms }} {{ impact.rooms === 1 ? 'room is' : 'rooms are' }} out
+                          of service.</strong
+                        >
+                        I’d prioritize repairs: about
+                        <strong>{{ money(impact.nightlyRevenue) }}/night</strong>
+                        in potential revenue is at risk.
+                      </p>
+                      <small
+                        >Assumes
+                        {{
+                          impact.rooms === 1
+                            ? 'the room would sell at its current rate'
+                            : 'the rooms would sell at current rates'
+                        }}.</small
+                      >
+                    </div>
+                    <button
+                      class="kassandra-action repair-help-button"
+                      type="button"
+                      (click)="helpFixRooms()"
+                      aria-controls="kassandra-panel"
+                    >
+                      Help me fix
+                    </button>
+                  </div>
+                </app-kassandra-note>
+              </section>
+            }
+            <section class="data-section room-inventory" animate.enter="panel-enter">
+              <div class="section-heading">
+                <h2 id="room-inventory-title" tabindex="-1">Rooms</h2>
+                <span>Today · {{ date(managementDate) }}</span>
+              </div>
+              <div class="room-filters">
+                <label
+                  ><span class="sr-only">Search rooms</span
+                  ><input
+                    id="room-search"
+                    type="search"
+                    placeholder="Search room or type"
+                    [ngModel]="roomSearch()"
+                    (ngModelChange)="roomSearch.set($event); resetRooms()"
+                /></label>
+                <app-select
+                  label="Room occupancy"
+                  [options]="occupancyOptions"
+                  [value]="occupancy()"
+                  (valueChange)="setRoomState($event)"
+                />
+                <app-select
+                  label="Housekeeping state"
+                  [options]="housekeepingOptions"
+                  [value]="housekeeping()"
+                  (valueChange)="setHousekeeping($event)"
+                />
+                @if (roomSearch() || occupancy() !== 'all' || housekeeping() !== 'all') {
+                  <button class="text-button" type="button" (click)="clearRoomFilters()">
+                    Clear filters
+                  </button>
+                }
+              </div>
+              @if (roomSavingId()) {
+                <span class="sr-only" role="status">Saving room changes…</span>
+              }
+              @if (roomFeedback()) {
+                <p class="room-feedback" role="status">{{ roomFeedback() }}</p>
+              }
+              @if (roomActionError()) {
+                <p class="room-action-error" role="alert">{{ roomActionError() }}</p>
+              }
+              <div class="table-scroll" tabindex="0" aria-label="Current rooms by hotel">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Room</th>
+                      <th>Hotel</th>
+                      <th>Type</th>
+                      <th>Occupancy</th>
+                      <th>Housekeeping</th>
+                      <th>Maintenance</th>
+                      <th><span class="sr-only">Actions</span></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (room of pageRooms(); track room.id) {
+                      <tr>
+                        <th scope="row">
+                          {{ room.number }}<small>Floor {{ room.floor }}</small>
+                        </th>
+                        <td>{{ city(room.hotelId) }}</td>
+                        <td>{{ roomTypeName(room.roomTypeId) }}</td>
+                        <td>
+                          <span class="state" [attr.data-state]="room.status">{{
+                            label(room.status)
+                          }}</span>
+                        </td>
+                        <td>{{ label(room.housekeeping) }}</td>
+                        <td>
+                          <span [title]="room.maintenanceNote || ''">{{
+                            label(room.maintenance)
+                          }}</span>
+                          @if (room.maintenanceNote) {
+                            <small>{{ room.maintenanceNote }}</small>
+                          }
+                        </td>
+                        <td class="room-action-cell">
+                          <app-room-actions
+                            [room]="room"
+                            [disabled]="roomSavingId() !== null"
+                            [pending]="roomSavingId() === room.id"
+                            [hotelName]="hotelName(room.hotelId)"
+                            [attr.data-room-id]="room.id"
+                            (action)="manageRoom(room, $event)"
+                          />
+                        </td>
+                      </tr>
+                    } @empty {
+                      <tr>
+                        <td colspan="7" class="empty-cell">No rooms match these filters.</td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+              <div class="pagination">
+                <span
+                  >{{ filteredRooms().length ? roomPage() * pageSize + 1 : 0 }}–{{
+                    roomPage() * pageSize + pageRooms().length
+                  }}
+                  of {{ filteredRooms().length }} rooms</span
+                >
+                <div>
+                  <button
+                    type="button"
+                    (click)="roomPage.set(roomPage() - 1)"
+                    [disabled]="roomPage() === 0"
+                    aria-label="Previous rooms"
+                  >
+                    Previous</button
+                  ><span>{{ roomPage() + 1 }} / {{ roomPageCount() }}</span
+                  ><button
+                    type="button"
+                    (click)="roomPage.set(roomPage() + 1)"
+                    [disabled]="roomPage() + 1 >= roomPageCount()"
+                    aria-label="Next rooms"
+                  >
+                    Next
+                  </button>
+                </div>
+              </div>
+            </section>
+          }
+        }
+        @case ('reservations') {
+          @defer (on immediate) {
+            <app-reservations />
+          } @placeholder {
+            <app-page-skeleton view="reservations" [contentOnly]="true" />
+          }
+        }
+        @case ('configuration') {
+          @defer (on immediate) {
+            <app-hotel-configuration />
+          } @placeholder {
+            <app-page-skeleton view="configuration" [contentOnly]="true" />
+          }
+        }
+      }
+      <footer class="page-footer">
+        @if (view() === 'configuration') {
+          Base rates in EUR, excluding VAT.
+        } @else if (
+          view() === 'reservations' || (view() === 'rooms' && roomSection() === 'inventory')
+        ) {
+          As of {{ date(managementDate) }} {{ managementDate.slice(0, 4) }} · EUR excluding VAT
+        } @else {
+          {{ meta.reportingPeriod.label }} · As of {{ date(network.bookingSnapshot.asOf) }} · EUR
+          excluding VAT · Future bookings can change.
+        }
+      </footer>
+    }
+  </main>
+}

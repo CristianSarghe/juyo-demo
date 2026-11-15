@@ -1,0 +1,63 @@
+{
+  "name": "juyo-kassandra",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "prestart": "npm run data:export",
+    "start": "ng serve --host 127.0.0.1 --poll 1000",
+    "build": "npm run data:export && ng build",
+    "data:export": "tsx scripts/export-fixtures.ts",
+    "test:data": "tsx scripts/validate-fixtures.ts",
+    "test:chat": "tsx scripts/validate-chat.ts",
+    "test:ranges": "tsx scripts/validate-ranges.ts",
+    "test:ui": "tsx scripts/validate-ui-state.ts",
+    "typecheck": "tsc --noEmit -p tsconfig.app.json",
+    "format": "prettier --write src angular.json tsconfig*.json package.json",
+    "test:api": "tsx scripts/validate-api.ts",
+    "test:domain": "tsx scripts/validate-domain-data.ts",
+    "test:api:facades": "tsx scripts/validate-api-facades.ts",
+    "test:session": "tsx scripts/validate-session.ts",
+    "docs:api": "tsx scripts/generate-openapi.ts",
+    "test:loading": "tsx scripts/validate-scoped-loading.ts && tsx scripts/validate-notifications.ts && tsx scripts/validate-navigation-loading.ts",
+    "test": "ng test --watch=false",
+    "test:watch": "ng test --watch",
+    "test:coverage": "ng test --watch=false --coverage"
+  },
+  "engines": {
+    "node": "^22.22.3 || ^24.15.0 || ^26.0.0"
+  },
+  "dependencies": {
+    "@angular/cdk": "22.2.6",
+    "@angular/common": "22.2.6",
+    "@angular/compiler": "22.2.6",
+    "@angular/core": "22.2.6",
+    "@angular/forms": "22.2.6",
+    "@angular/platform-browser": "22.2.6",
+    "@angular/router": "22.2.6",
+    "@ngrx/signals": "22.0.1",
+    "@taiga-ui/cdk": "5.32.0",
+    "@taiga-ui/core": "5.32.0",
+    "@taiga-ui/i18n": "5.32.0",
+    "@taiga-ui/kit": "5.32.0",
+    "@taiga-ui/styles": "5.32.0",
+    "echarts": "6.1.0",
+    "rxjs": "~7.8.2",
+    "tslib": "^2.8.1"
+  },
+  "devDependencies": {
+    "@angular/build": "22.2.6",
+    "@angular/cli": "22.2.6",
+    "@angular/compiler-cli": "22.2.6",
+    "@tailwindcss/postcss": "4.3.5",
+    "@vitest/coverage-v8": "4.1.12",
+    "ajv": "8.20.0",
+    "jsdom": "31.0.1",
+    "less": "4.9.1",
+    "postcss": "8.5.32",
+    "prettier": "3.6.2",
+    "tailwindcss": "4.3.5",
+    "tsx": "4.23.15",
+    "typescript": "~6.0.0",
+    "vitest": "4.1.12"
+  }
+}

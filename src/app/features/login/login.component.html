@@ -1,0 +1,96 @@
+@if (pending() && (auth.loadingStage() === 'workspace' || auth.isAuthenticated())) {
+  <app-workspace-skeleton />
+} @else {
+  <main class="login-page grid min-h-dvh place-items-center px-6 py-10">
+    <div class="login-stage">
+      <div class="login-surround" aria-hidden="true"></div>
+      <section class="login-content" aria-labelledby="login-title" animate.enter="login-enter">
+        <h1 id="login-title" class="sr-only">Sign in</h1>
+        <img class="logo" src="/assets/juyo-logo.svg" alt="Juyo" width="102" height="32" />
+        <span class="sr-only" role="status">{{ pending() ? 'Signing in…' : '' }}</span>
+        <form class="grid gap-5" (ngSubmit)="signIn()" novalidate [attr.aria-busy]="pending()">
+          <div class="field">
+            <label for="login-email">Email</label>
+            <input
+              #emailField
+              id="login-email"
+              name="email"
+              type="email"
+              inputmode="email"
+              autocomplete="username"
+              [(ngModel)]="email"
+              [attr.aria-invalid]="errors().email ? 'true' : null"
+              [attr.aria-describedby]="errors().email ? 'email-error' : null"
+              [disabled]="pending() || auth.isAuthenticated()"
+              maxlength="254"
+              required
+            />
+            @if (errors().email) {
+              <p class="field-error" id="email-error" aria-live="polite">{{ errors().email }}</p>
+            }
+          </div>
+          <div class="field">
+            <label for="login-password">Password</label>
+            <div class="password-wrap">
+              <input
+                #passwordField
+                id="login-password"
+                name="password"
+                [type]="showPassword() ? 'text' : 'password'"
+                autocomplete="current-password"
+                [(ngModel)]="password"
+                [attr.aria-invalid]="errors().password ? 'true' : null"
+                [attr.aria-describedby]="errors().password ? 'password-error' : null"
+                [disabled]="pending() || auth.isAuthenticated()"
+                required
+                minlength="8"
+              />
+              <button
+                class="password-toggle"
+                type="button"
+                (click)="showPassword.set(!showPassword())"
+                [attr.aria-label]="showPassword() ? 'Hide password' : 'Show password'"
+                [attr.aria-pressed]="showPassword()"
+                [disabled]="pending() || auth.isAuthenticated()"
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.6"
+                  aria-hidden="true"
+                >
+                  <path d="M3 12s3.2-7 9-7 9 7 9 7-3.2 7-9 7-9-7-9-7Z" />
+                  <circle cx="12" cy="12" r="3" />
+                  @if (showPassword()) {
+                    <path d="m3 3 18 18" stroke-linecap="round" />
+                  }
+                </svg>
+              </button>
+            </div>
+            @if (errors().password) {
+              <p class="field-error" id="password-error" aria-live="polite">
+                {{ errors().password }}
+              </p>
+            }
+          </div>
+          @if (errors().form) {
+            <p class="form-error" role="alert">{{ errors().form }}</p>
+          }
+          <button
+            class="sign-in-button"
+            type="submit"
+            [disabled]="pending()"
+            [attr.aria-busy]="pending()"
+          >
+            @if (pending()) {
+              <app-spinner size="sm" [decorative]="true" /><span>Signing in…</span>
+            } @else {
+              <span>{{ auth.isAuthenticated() ? 'Try again' : 'Sign in' }}</span>
+            }
+          </button>
+        </form>
+      </section>
+    </div>
+  </main>
+}

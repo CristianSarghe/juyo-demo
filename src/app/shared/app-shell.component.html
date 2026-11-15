@@ -1,0 +1,177 @@
+<div class="app-shell flex h-dvh min-h-0 flex-col gap-3 p-3" animate.enter="shell-enter">
+  <header class="app-toolbar flex shrink-0 items-center gap-5" aria-label="Application toolbar">
+    <a
+      class="brand-link inline-flex"
+      routerLink="/network"
+      [queryParams]="{ view: 'overview' }"
+      aria-label="Juyo home"
+      ><img src="/assets/juyo-logo.svg" width="102" height="32" alt="Juyo"
+    /></a>
+    <app-select
+      class="hotel-selector"
+      label="Hotel or portfolio"
+      [options]="hotelOptions"
+      [value]="hotels.scope()"
+      (valueChange)="selectHotel($event)"
+    />
+    <button
+      class="mobile-nav-toggle icon-button"
+      type="button"
+      (click)="openNav()"
+      aria-label="Open navigation"
+    >
+      <app-icon name="menu" />
+    </button>
+    <div class="toolbar-actions">
+      <app-hotel-notifications (opened)="accountMenuOpen.set(false); closeNav()" />
+      <div class="account">
+        <button
+          class="account-trigger flex items-center gap-2.5"
+          type="button"
+          [attr.aria-label]="'User menu for ' + firstName()"
+          [tuiDropdown]="accountMenu"
+          [(tuiDropdownOpen)]="accountMenuOpen"
+          tuiDropdownA11y
+          tuiDropdownRole="menu"
+          tuiDropdownAlign="end"
+          [tuiDropdownOffset]="8"
+        >
+          <span class="avatar" aria-hidden="true">{{ firstName().slice(0, 1) }}</span>
+          <span class="account-name">
+            <span [title]="auth.user()?.email || firstName()">{{ firstName() }}</span>
+          </span>
+          <app-icon class="account-chevron" name="down" />
+        </button>
+      </div>
+    </div>
+    <ng-template #accountMenu>
+      <tui-data-list class="account-menu" size="s" animate.enter="account-menu-enter">
+        <button
+          tuiOption
+          tuiAutoFocus
+          type="button"
+          role="menuitem"
+          [disabled]="loggingOut()"
+          [attr.aria-busy]="loggingOut()"
+          (click)="logout()"
+        >
+          @if (loggingOut()) {
+            <app-spinner size="sm" [decorative]="true" />
+          } @else {
+            <app-icon name="logout" />
+          }
+          <span>{{ loggingOut() ? 'Logging out…' : 'Log out' }}</span>
+        </button>
+        @if (logoutError()) {
+          <p class="account-error" role="alert">{{ logoutError() }}</p>
+        }
+      </tui-data-list>
+    </ng-template>
+  </header>
+  <div class="app-body flex min-h-0 min-w-0 flex-1 gap-3">
+    <aside
+      class="sidebar desktop-sidebar flex h-full shrink-0 flex-col"
+      aria-label="Main navigation"
+    >
+      <ng-container
+        [ngTemplateOutlet]="navigationMenu"
+        [ngTemplateOutletContext]="{ triggerId: 'assistant-trigger' }"
+      />
+    </aside>
+    <div class="app-content flex min-h-0 min-w-0 flex-1 flex-col">
+      @if (navigation.error()) {
+        <div class="navigation-error" role="alert">
+          <span>{{ navigation.error() }}</span>
+          <button type="button" (click)="navigation.retry()">Try again</button>
+        </div>
+      }
+      <div
+        class="route-content"
+        [class.route-concealed]="navigation.visible()"
+        [attr.inert]="navigation.visible() ? '' : null"
+        [attr.aria-busy]="navigation.pending()"
+      >
+        <router-outlet />
+      </div>
+      @if (navigation.visible()) {
+        <div class="navigation-placeholder">
+          <app-page-skeleton [view]="navigation.targetView()" />
+        </div>
+      }
+    </div>
+    <app-assistant-panel />
+  </div>
+  <dialog #mobileNav class="mobile-nav" aria-label="Navigation" (click)="closeOnBackdrop($event)">
+    <div class="sidebar flex h-full flex-col">
+      <button
+        type="button"
+        class="close-nav icon-button"
+        (click)="closeNav()"
+        aria-label="Close navigation"
+      >
+        <app-icon name="close" />
+      </button>
+      <ng-container
+        [ngTemplateOutlet]="navigationMenu"
+        [ngTemplateOutletContext]="{ triggerId: 'assistant-trigger-mobile' }"
+      />
+    </div>
+  </dialog>
+</div>
+
+<ng-template #navigationMenu let-triggerId="triggerId">
+  <button
+    class="assistant-trigger"
+    [class.is-open]="assistant.isOpen()"
+    [id]="triggerId"
+    type="button"
+    aria-label="Ask Kassandra"
+    aria-keyshortcuts="Control+K Meta+K"
+    aria-controls="kassandra-panel"
+    [attr.aria-expanded]="assistant.isOpen()"
+    title="Open Kassandra (⌘ / Ctrl K)"
+    (click)="openAssistant()"
+  >
+    <app-brand-mark />
+    <span class="assistant-trigger-copy">
+      <span>Want more insights?</span>
+      <strong>Ask Kassandra</strong>
+    </span>
+    <app-icon name="arrow" class="assistant-trigger-arrow" />
+  </button>
+  <nav class="primary-nav grid gap-1" aria-label="Application">
+    <a
+      routerLink="/network"
+      [queryParams]="{ view: 'overview' }"
+      [class.selected]="networkView() === 'overview'"
+      [attr.aria-current]="networkView() === 'overview' ? 'page' : null"
+      (click)="closeNav()"
+      ><app-icon name="panel" /><span>Dashboard</span></a
+    >
+    <a
+      routerLink="/network"
+      [queryParams]="{ view: 'rooms' }"
+      [class.selected]="networkView() === 'rooms'"
+      [attr.aria-current]="networkView() === 'rooms' ? 'page' : null"
+      (click)="closeNav()"
+      ><app-icon name="building" /><span>Room management</span></a
+    >
+    <a
+      routerLink="/network"
+      [queryParams]="{ view: 'reservations' }"
+      [class.selected]="networkView() === 'reservations'"
+      [attr.aria-current]="networkView() === 'reservations' ? 'page' : null"
+      (click)="closeNav()"
+      ><app-icon name="calendar" /><span>Reservations</span></a
+    >
+    <a
+      routerLink="/network"
+      [queryParams]="{ view: 'configuration' }"
+      [class.selected]="networkView() === 'configuration'"
+      [attr.aria-current]="networkView() === 'configuration' ? 'page' : null"
+      (click)="closeNav()"
+      ><app-icon name="settings" /><span>Hotel configuration</span></a
+    >
+  </nav>
+  <div class="sidebar-spacer flex-1"></div>
+</ng-template>

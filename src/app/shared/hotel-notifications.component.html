@@ -1,0 +1,358 @@
+<div class="notification-actions">
+  <button
+    #warningsButton
+    class="notification-button warning-trigger"
+    type="button"
+    [attr.aria-label]="warningDescription()"
+    [title]="warningDescription()"
+    [tuiDropdown]="warningsPopover"
+    [tuiDropdownOpen]="active() === 'warnings'"
+    (tuiDropdownOpenChange)="onPopoverChange('warnings', $event)"
+    tuiDropdownA11y
+    tuiDropdownRole="menu"
+    tuiDropdownAlign="end"
+    tuiDropdownLimitWidth="auto"
+    [tuiDropdownOffset]="8"
+    [tuiDropdownMaxHeight]="460"
+  >
+    <app-icon name="warning" /><span class="button-label">Warnings</span>
+    <span class="notification-count" [class.has-warnings]="warnings().length > 0"
+      >{{ notifications.warningsError() && notifications.warnings() === null ? '—' : '' }}
+      @if (notifications.warningsLoading() && notifications.warnings() === null) {
+        <app-skeleton width="16px" height="8px" />
+      } @else if (notifications.warnings() !== null) {
+        {{ warningCount() }}
+      }
+    </span>
+  </button>
+  <button
+    #eventsButton
+    class="notification-button"
+    type="button"
+    [attr.aria-label]="eventDescription()"
+    [title]="eventDescription()"
+    [tuiDropdown]="eventsPopover"
+    [tuiDropdownOpen]="active() === 'events'"
+    (tuiDropdownOpenChange)="onPopoverChange('events', $event)"
+    tuiDropdownA11y
+    tuiDropdownRole="menu"
+    tuiDropdownAlign="end"
+    tuiDropdownLimitWidth="auto"
+    [tuiDropdownOffset]="8"
+    [tuiDropdownMaxHeight]="520"
+  >
+    <app-icon name="calendar" /><span class="button-label">Upcoming events</span>
+    <span class="notification-count">
+      @if (notifications.eventsLoading() && notifications.events() === null) {
+        <app-skeleton width="16px" height="8px" />
+      } @else {
+        {{ notifications.eventsError() && notifications.events() === null ? '—' : eventCount() }}
+      }
+    </span>
+  </button>
+</div>
+
+<ng-template #warningsPopover>
+  <section class="notification-popover" [class.is-empty]="!warnings().length" aria-label="Warnings">
+    <header class="popover-heading">
+      <h2>
+        Warnings
+        @if (warnings().length) {
+          <span>{{ warnings().length }}</span>
+        }
+      </h2>
+      <p>{{ context() }} · {{ date(asOf) }}</p>
+    </header>
+    @if (notifications.warningsLoading() && notifications.warnings() === null) {
+      <div class="notification-status" role="status">
+        <app-spinner size="sm" [decorative]="true" /> Loading warnings…
+      </div>
+    } @else if (notifications.warningsError()) {
+      <div class="notification-status notification-error" role="alert">
+        <p>{{ notifications.warningsError() }}</p>
+        <button type="button" (click)="notifications.loadWarnings(true)">Try again</button>
+      </div>
+    } @else if (warnings().length) {
+      <tui-data-list class="brief-list" size="s">
+        @for (warning of warnings(); track warning.room.id; let first = $first) {
+          <button
+            tuiOption
+            [tuiAutoFocus]="first"
+            class="brief-item warning-brief"
+            type="button"
+            role="menuitem"
+            (click)="openWarning(warning)"
+          >
+            <span class="warning-room"
+              ><app-icon name="warning" /><span
+                ><strong>Room {{ warning.room.number }}</strong
+                ><small>{{ warning.hotel.name }}</small></span
+              ></span
+            >
+            <span class="brief-end"
+              ><span class="out-of-order">Out of order</span
+              ><small>{{ label(warning.room.maintenance) }}</small></span
+            >
+          </button>
+        }
+      </tui-data-list>
+    } @else {
+      <div class="empty-state" role="status">
+        <app-icon name="check" />
+        <h3>
+          {{ hotels.scope() === 'portfolio' ? 'No warnings' : 'No warnings for this location' }}
+        </h3>
+      </div>
+      @if (hasWarningsElsewhere()) {
+        <footer class="warnings-elsewhere">
+          <p>
+            {{ totalWarnings() }} {{ totalWarnings() === 1 ? 'warning' : 'warnings' }} at other
+            hotels
+          </p>
+          <button
+            tuiAutoFocus
+            class="primary-action"
+            type="button"
+            role="menuitem"
+            (click)="showAllWarnings()"
+          >
+            View all warnings <app-icon name="arrow" />
+          </button>
+        </footer>
+      }
+    }
+  </section>
+</ng-template>
+
+<ng-template #eventsPopover>
+  <section
+    class="notification-popover events-popover"
+    [class.is-empty]="!events().length"
+    aria-label="Upcoming events"
+  >
+    <header class="popover-heading">
+      <h2>
+        Upcoming events
+        @if (events().length) {
+          <span>{{ events().length }}</span>
+        }
+      </h2>
+      <p>
+        {{ context() }}
+        @if (events().length) {
+          · Nearest dates first
+        }
+      </p>
+    </header>
+    @if (notifications.eventsLoading() && notifications.events() === null) {
+      <div class="notification-status" role="status">
+        <app-spinner size="sm" [decorative]="true" /> Loading upcoming events…
+      </div>
+    } @else if (notifications.eventsError()) {
+      <div class="notification-status notification-error" role="alert">
+        <p>{{ notifications.eventsError() }}</p>
+        <button type="button" (click)="notifications.loadEvents()">Try again</button>
+      </div>
+    } @else if (events().length) {
+      <tui-data-list class="brief-list" size="s">
+        @for (item of events(); track item.event.id; let first = $first) {
+          <button
+            tuiOption
+            [tuiAutoFocus]="first"
+            class="brief-item event-brief"
+            type="button"
+            role="menuitem"
+            (click)="openEvent(item)"
+          >
+            <span class="brief-copy"
+              ><strong>{{ item.event.name }}</strong
+              ><small
+                >{{ dateRange(item.event.startDate, item.event.endDate, true) }} ·
+                {{ item.event.city }}
+                @if (isOngoing(item.event.startDate, item.event.endDate)) {
+                  <span class="ongoing"> · Ongoing</span>
+                }
+              </small></span
+            >
+            <span class="importance" [attr.data-importance]="item.importance">{{
+              label(item.importance)
+            }}</span>
+          </button>
+        }
+      </tui-data-list>
+    } @else {
+      <div class="empty-state" role="status">
+        <app-icon name="calendar" />
+        <h3>No upcoming events</h3>
+      </div>
+    }
+  </section>
+</ng-template>
+
+<dialog
+  #detailDialog
+  class="notification-dialog"
+  [class.event-dialog]="selectedEvent()"
+  [class.warning-dialog]="selectedWarning()"
+  [attr.aria-labelledby]="id + '-detail-title'"
+  [attr.aria-describedby]="id + '-detail-context'"
+  (click)="onBackdrop($event)"
+  (close)="onClosed()"
+>
+  <header class="dialog-heading">
+    <div>
+      <h2 [id]="id + '-detail-title'">
+        {{
+          selectedEvent()?.event?.name ||
+            (selectedWarning() ? 'Room ' + selectedWarning()!.room.number : 'Details')
+        }}
+      </h2>
+      <p [id]="id + '-detail-context'">
+        @if (selectedEvent(); as item) {
+          {{ dateRange(item.event.startDate, item.event.endDate) }} · {{ item.event.city }}
+        } @else if (selectedWarning(); as warning) {
+          {{ warning.hotel.name }} · {{ date(asOf) }}
+        }
+      </p>
+    </div>
+    <button
+      class="close-button"
+      type="button"
+      autofocus
+      (click)="close()"
+      aria-label="Close details"
+    >
+      <app-icon name="close" />
+    </button>
+  </header>
+
+  @if (selectedEvent(); as item) {
+    <div class="event-detail" animate.enter="detail-enter">
+      <div class="event-facts">
+        <span class="importance" [attr.data-importance]="item.importance">{{
+          label(item.importance)
+        }}</span
+        ><span>{{ label(item.event.category) }}</span
+        ><span>{{ count(item.event.expectedAttendance) }} expected attendees</span>
+        @if (isOngoing(item.event.startDate, item.event.endDate)) {
+          <span class="ongoing">Ongoing</span>
+        }
+      </div>
+      <p class="venue">
+        <app-icon name="pin" />{{ item.event.venue }} · {{ item.event.city }},
+        {{ item.event.country }}
+      </p>
+      <app-event-location-map
+        [item]="item"
+        [selectedHotelId]="mapHotelId()"
+        (hotelSelected)="mapHotelId.set($event)"
+      />
+      <section class="assessment" aria-label="Kassandra assessment">
+        <app-kassandra-note>
+          <div class="assessment-body">
+            @for (impact of item.impacts; track impact.hotelId; let first = $first) {
+              <article class="hotel-assessment">
+                <div class="impact-heading">
+                  <h3>
+                    <button
+                      class="hotel-map-link"
+                      type="button"
+                      (click)="mapHotelId.set(impact.hotelId)"
+                      [attr.aria-label]="'Show ' + impact.hotel.name + ' on map'"
+                      [attr.aria-pressed]="mapHotelId() === impact.hotelId"
+                    >
+                      {{ impact.hotel.name }}
+                    </button>
+                  </h3>
+                  <span class="impact-distance">
+                    {{ distance(impact.distanceKm) }} away from {{ impact.hotel.name }}
+                  </span>
+                </div>
+                <p>{{ assessment(impact) }}</p>
+                <div class="impact-estimate">
+                  @if (notifications.estimateLoading()) {
+                    <p class="estimate-status" [attr.role]="first ? 'status' : null">
+                      <app-spinner size="sm" [decorative]="true" /> Loading impact…
+                    </p>
+                    <div class="estimate-placeholder" aria-hidden="true">
+                      <app-skeleton width="86%" height="10px" />
+                    </div>
+                  } @else if (notifications.estimateError()) {
+                    @if (first) {
+                      <div class="estimate-status notification-error" role="alert">
+                        <p>{{ notifications.estimateError() }}</p>
+                        <button type="button" (click)="notifications.loadEstimates(item)">
+                          Try again
+                        </button>
+                      </div>
+                    } @else {
+                      <p class="estimate-status">Impact unavailable.</p>
+                    }
+                  } @else if (rateEstimates()[impact.hotelId]; as estimate) {
+                    <p class="rate-estimate">{{ estimate }}</p>
+                  }
+                </div>
+              </article>
+            }
+          </div>
+        </app-kassandra-note>
+      </section>
+      <footer class="event-actions">
+        <div class="event-price-actions">
+          <button
+            class="kassandra-action"
+            type="button"
+            (click)="askForEventPrices(item)"
+            [disabled]="pricingAssistantBusy() || !pricingTargets().length"
+            aria-controls="kassandra-panel"
+            [attr.aria-label]="'Review price changes with Kassandra for ' + pricingTargetLabel()"
+            title="Review room types and dates in one proposal before confirming all changes"
+          >
+            <app-brand-mark /> Update with Kassandra
+          </button>
+          <button class="primary-action" type="button" (click)="openRoomPrices(item)">
+            Edit prices <app-icon name="arrow" />
+          </button>
+        </div>
+      </footer>
+    </div>
+  } @else if (selectedWarning(); as warning) {
+    <div class="warning-detail" animate.enter="detail-enter">
+      <div class="warning-summary">
+        <span class="room-visual" aria-hidden="true"
+          ><app-icon name="building" /><strong>{{ warning.room.number }}</strong></span
+        >
+        <div>
+          <span class="out-of-order">Out of order</span>
+          <p>{{ roomType(warning.room.roomTypeId) }} · Floor {{ warning.room.floor }}</p>
+        </div>
+      </div>
+      <dl class="warning-facts">
+        <div>
+          <dt>Maintenance</dt>
+          <dd>{{ label(warning.room.maintenance) }}</dd>
+        </div>
+        <div>
+          <dt>Housekeeping</dt>
+          <dd>{{ label(warning.room.housekeeping) }}</dd>
+        </div>
+        <div>
+          <dt>Availability</dt>
+          <dd>Unavailable for sale</dd>
+        </div>
+      </dl>
+      <section class="maintenance-note">
+        <h3>Maintenance note</h3>
+        <p>{{ warning.room.maintenanceNote || 'No maintenance note recorded.' }}</p>
+      </section>
+      <footer class="detail-actions warning-actions">
+        <button class="kassandra-action" type="button" (click)="helpFix(warning)">
+          <app-brand-mark /> Help me fix
+        </button>
+        <button class="primary-action" type="button" (click)="viewRoom(warning)">
+          View room <app-icon name="arrow" />
+        </button>
+      </footer>
+    </div>
+  }
+</dialog>

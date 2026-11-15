@@ -1,0 +1,9 @@
+[
+  {
+    "previousSourceSha256": "ccbbf95062ae0353d2699034ac9ac62c3fb1e024fe2d87cdd000f562615fe76c",
+    "sourceSha256": "9d8498f806d2ebe1dfce5160f4092f5d31544b63ea487793b0ab4590cabf3cbf",
+    "requiredMigration": 3,
+    "script": "extend-hotel-addresses.sql",
+    "description": "Add four sample hotel postal addresses and a 2.3.0 provenance capture; preserve the complete prior import and every room, reservation and financial ledger row."
+  }
+]

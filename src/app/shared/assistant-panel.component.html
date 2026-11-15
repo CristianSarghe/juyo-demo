@@ -1,0 +1,172 @@
+@if (assistant.isOpen()) {
+  @if (mobile()) {
+    <dialog
+      #mobileDialog
+      class="assistant-shell mobile-assistant"
+      aria-labelledby="assistant-title"
+      (cancel)="onCancel($event)"
+    >
+      <ng-container [ngTemplateOutlet]="contents" />
+    </dialog>
+  } @else {
+    <aside
+      class="assistant-shell"
+      aria-labelledby="assistant-title"
+      animate.enter="assistant-enter"
+    >
+      <ng-container [ngTemplateOutlet]="contents" />
+    </aside>
+  }
+}
+
+<ng-template #contents>
+  <header class="assistant-heading">
+    <div class="assistant-identity">
+      <span class="assistant-emblem"><app-brand-mark /></span>
+      <div>
+        <h2 id="assistant-title">Kassandra</h2>
+        <p>Your hotel assistant</p>
+      </div>
+    </div>
+    <div class="heading-actions">
+      @if (assistant.messages().length) {
+        <button
+          class="quiet-button"
+          type="button"
+          (click)="newConversation()"
+          aria-label="Start a new conversation"
+          title="New conversation"
+        >
+          <app-icon name="plus" />
+        </button>
+      }
+      <button
+        class="quiet-button close-assistant"
+        type="button"
+        (click)="assistant.close()"
+        aria-label="Close Kassandra"
+        title="Close Kassandra"
+      >
+        <app-icon name="close" />
+      </button>
+    </div>
+  </header>
+  <div
+    #transcript
+    class="assistant-transcript"
+    [class.is-empty]="!assistant.messages().length && !assistant.loading()"
+    [attr.aria-busy]="assistant.loading() || assistant.responding()"
+    tabindex="0"
+    role="log"
+    aria-label="Kassandra conversation"
+    aria-live="polite"
+    aria-relevant="additions"
+  >
+    @if (assistant.loading()) {
+      <div class="assistant-loading" role="status" aria-label="Loading conversation">
+        <app-skeleton width="42%" height="14px" />
+        <app-skeleton height="12px" />
+        <app-skeleton width="82%" height="12px" />
+        <app-skeleton width="64%" height="12px" />
+        <span class="sr-only">Loading conversation…</span>
+      </div>
+    } @else if (!assistant.messages().length) {
+      <section class="assistant-welcome" aria-labelledby="assistant-welcome-title">
+        <h3 id="assistant-welcome-title">What can I help with?</h3>
+        <div class="example-prompts" role="group" aria-label="Example questions">
+          @for (example of examples; track example.id) {
+            <button type="button" class="example-prompt" (click)="chooseExample(example.prompt)">
+              <span
+                ><strong>{{ example.label }}</strong
+                ><span>{{ example.prompt }}</span></span
+              ><app-icon name="arrow" />
+            </button>
+          }
+        </div>
+      </section>
+    } @else {
+      <div class="assistant-messages">
+        @for (message of assistant.messages(); track message.id) {
+          @if (message.role === 'user') {
+            <div class="question-bubble" animate.enter="assistant-message-enter">
+              <span class="sr-only">You: </span>{{ message.content }}
+            </div>
+          } @else {
+            <article
+              class="assistant-answer"
+              aria-label="Kassandra response"
+              animate.enter="assistant-message-enter"
+            >
+              @if (message.insight) {
+                <app-answer [message]="message" />
+              } @else {
+                <div class="answer-identity"><app-brand-mark /><span>Kassandra</span></div>
+                <app-cited-answer [message]="message" />
+              }
+              @if (message.action; as action) {
+                <app-chat-action
+                  [action]="action"
+                  [busy]="assistant.pendingAction() === action.id"
+                  [disabled]="!!assistant.pendingAction() || assistant.responding()"
+                  (decision)="assistant.decideAction(action, $event)"
+                />
+              }
+            </article>
+          }
+        }
+        @if (assistant.responding()) {
+          <div class="assistant-thinking" role="status">
+            <app-spinner size="sm" [decorative]="true" /><span>Kassandra is working…</span>
+          </div>
+        }
+      </div>
+    }
+  </div>
+  <footer class="assistant-footer">
+    @if (assistant.error()) {
+      <div class="assistant-error" role="alert">
+        <p>{{ assistant.error() }}</p>
+        @if (!assistant.messages().length) {
+          <button type="button" (click)="assistant.retry()" [disabled]="assistant.loading()">
+            Retry
+          </button>
+        }
+      </div>
+    }
+    <form class="assistant-composer" (submit)="$event.preventDefault(); send()">
+      <label class="sr-only" for="assistant-prompt">Message Kassandra</label>
+      <textarea
+        #prompt
+        id="assistant-prompt"
+        name="assistant-prompt"
+        rows="2"
+        maxlength="4000"
+        placeholder="Ask Kassandra…"
+        [value]="assistant.draft()"
+        [readOnly]="assistant.requestPending() && !assistant.responding()"
+        (input)="onInput($event)"
+        (keydown)="onKeydown($event)"
+      ></textarea>
+      <div class="composer-bottom">
+        <span>Enter to send</span>
+        @if (assistant.responding()) {
+          <button type="button" class="stop-assistant" (click)="assistant.stop()">Stop</button>
+        } @else {
+          <button
+            type="submit"
+            class="send-assistant"
+            [disabled]="
+              !assistant.draft().trim() ||
+              assistant.loading() ||
+              assistant.requestPending() ||
+              !!assistant.pendingAction()
+            "
+            aria-label="Send message"
+          >
+            <app-icon name="up" />
+          </button>
+        }
+      </div>
+    </form>
+  </footer>
+</ng-template>

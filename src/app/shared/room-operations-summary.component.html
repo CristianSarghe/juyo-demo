@@ -1,0 +1,35 @@
+<div class="operations-summary grid" aria-label="Current room queues">
+  @for (card of cards; track card.queue) {
+    <article
+      class="queue-card"
+      [class.selected]="active() === card.queue"
+      [class.has-rooms]="counts()[card.count] > 0"
+      [attr.data-queue]="card.queue"
+    >
+      <h3>{{ card.title }}</h3>
+      <strong class="queue-count"
+        >{{ counts()[card.count]
+        }}<span>{{
+          card.queue === 'reserved'
+            ? counts()[card.count] === 1
+              ? 'manual hold'
+              : 'manual holds'
+            : counts()[card.count] === 1
+              ? 'room'
+              : 'rooms'
+        }}</span></strong
+      >
+      <button
+        type="button"
+        [attr.aria-label]="card.accessibleAction"
+        [attr.aria-pressed]="active() === card.queue"
+        (click)="selectQueue.emit(card.queue)"
+      >
+        {{ card.action }}
+        <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true">
+          <path d="M3 8h9m-3-3 3 3-3 3" />
+        </svg>
+      </button>
+    </article>
+  }
+</div>

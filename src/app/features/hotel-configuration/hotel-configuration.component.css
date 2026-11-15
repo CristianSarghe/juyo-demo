@@ -1,0 +1,144 @@
+:host {
+  display: block;
+  min-width: 0;
+}
+.hotel-location {
+  display: grid;
+  grid-template-columns: minmax(220px, 320px) 1fr;
+  align-items: start;
+  gap: 32px;
+  padding: 0 2px 24px;
+  margin-bottom: 24px;
+  border-bottom: 1px solid var(--line);
+}
+.hotel-location h2 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+}
+.hotel-location address {
+  font-style: normal;
+  font-size: 12px;
+  line-height: 1.7;
+}
+@media (max-width: 600px) {
+  .hotel-location {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+}
+.configuration-panel {
+  min-width: 0;
+  padding: 22px;
+  border: 1px solid var(--line);
+  border-radius: 13px;
+  background: var(--surface);
+}
+.configuration-heading {
+  margin-bottom: 18px;
+}
+.configuration-heading h2 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.3px;
+}
+.configuration-heading > span {
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.5;
+  text-align: right;
+}
+.table-scroll {
+  max-width: 100%;
+  overflow-x: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #cfd5d0 transparent;
+}
+.table-scroll:focus-visible {
+  outline: 2px solid var(--brand-ink);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+table {
+  width: 100%;
+  min-width: 780px;
+  border-collapse: collapse;
+  font-size: 12px;
+  line-height: 1.6;
+  font-variant-numeric: tabular-nums;
+  text-align: left;
+}
+thead th {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--line);
+  background: #fafbfa;
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 400;
+  white-space: nowrap;
+}
+tbody th,
+tbody td {
+  padding: 13px 12px;
+  border-bottom: 1px solid #edf0ed;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+tbody th {
+  font-weight: 500;
+}
+tbody tr:last-child > * {
+  border-bottom: 0;
+}
+tbody small {
+  display: block;
+  margin-top: 3px;
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 400;
+  line-height: 1.5;
+}
+.numeric {
+  text-align: right;
+}
+td.facilities {
+  min-width: 220px;
+  max-width: 330px;
+  white-space: normal;
+}
+td.empty-cell {
+  padding: 28px 12px;
+  color: var(--muted);
+  text-align: center;
+}
+.configuration-enter {
+  animation: configuration-enter 180ms ease-out;
+}
+@keyframes configuration-enter {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@media (max-width: 600px) {
+  .configuration-panel {
+    padding: 18px 14px;
+  }
+  .configuration-heading {
+    flex-wrap: wrap;
+    gap: 7px;
+  }
+  .configuration-heading > span {
+    text-align: left;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .configuration-enter {
+    animation: none;
+  }
+}
