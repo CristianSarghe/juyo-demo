@@ -8,6 +8,7 @@
   border: 1px solid #e6ebe7;
   border-radius: 12px;
   color: #1b211f;
+  overflow-wrap: anywhere;
 }
 .answer-identity {
   display: flex;

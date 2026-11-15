@@ -1,6 +1,6 @@
 # API boundary
 
-All application data crosses Angular services and `HttpClient`. The default HTTP transport targets `https://api-juyo.cristiansarghe.com/api/v1`. The standalone backend reads the existing SQL Server and persists API state separately. The Angular frontend supports local development and the authorized Cloudflare Pages Free deployment at `https://juyo-demo.pages.dev`; it contains no SQL driver, credentials or direct database connection.
+All application data crosses Angular services and `HttpClient`. The default HTTP transport targets `https://api-juyo.cristiansarghe.com/api/v1`. The standalone backend reads the existing SQL Server and persists API state separately. The Angular frontend supports local development and the authorized Cloudflare Pages Free deployment at `https://juyo-demo.cristiansarghe.com` (fallback `https://juyo-demo.pages.dev`); it contains no SQL driver, credentials or direct database connection.
 
 [OpenAPI 3.1 contract](./openapi.json) lists request/response schemas and operations. Regenerate it with `npm run docs:api`. Resource paths live in `src/app/core/api/resource-paths.ts`; business DTOs live in `network.models.ts`, `api.models.ts` and `mutation.models.ts`.
 
@@ -37,7 +37,7 @@ IDs are opaque strings. Available dates, reporting months and business date come
 
 Hotels include nullable `address: { line1: string, line2?: string, postalCode: string }` in hotel, reference-data and snapshot responses. City/country and coordinates remain separate fields. SQL reads the optional one-to-one `juyo.HotelAddress`; API requests cannot modify it. The configured sample addresses describe fictional properties, and coordinates are illustrative rather than verified address matches.
 
-Collection responses use `{ items, page, pageSize, total }`. Pages are one-based, default size 50, maximum 1,000. The collection client requests 500 rows and rejects inconsistent totals or more than 50,000 rows per collection; each page requests only its required scoped collections. Source ordering is stable; no sorting parameter is currently exposed.
+Collection responses use `{ items, page, pageSize, total }`. Pages are one-based, default size 50, maximum 1,000. The collection client requests 1,000 rows and rejects inconsistent totals or more than 50,000 rows per collection; each page requests only its required scoped collections. Source ordering is stable; no sorting parameter is currently exposed.
 
 Omitting `hotelId` means all hotels authorized for the workspace. `from` and `to` are inclusive and must be supplied together. Daily records filter their stay/reporting date; monthly rows use enclosing months. Reservation/event intervals overlap the selection; `stayDate` uses `arrival <= stayDate < departure`. Unsupported collection query names return 400. Filters relevant to each resource are listed in OpenAPI.
 

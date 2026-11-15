@@ -1,4 +1,6 @@
 :host {
+  width: 100%;
+  container: price-history / inline-size;
   display: block;
   min-width: 0;
 }
@@ -116,7 +118,7 @@
   border-radius: 8px;
   background: #b8adcf;
 }
-@media (max-width: 600px) {
+@container price-history (max-width: 600px) {
   .price-history {
     padding: 18px 14px 12px;
   }

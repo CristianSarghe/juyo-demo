@@ -96,8 +96,8 @@ describe('RoomPricesComponent logic', () => {
       [],
       expect.objectContaining({
         queryParams: {
-          view: 'rooms',
-          section: 'prices',
+          view: null,
+          section: null,
           from: '2026-11-14',
           through: '2026-11-18',
           type: roomType.id,

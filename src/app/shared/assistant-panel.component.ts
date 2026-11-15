@@ -41,6 +41,7 @@ export class AssistantPanelComponent {
   readonly assistant = inject(AssistantUiStore);
   readonly examples = ASSISTANT_EXAMPLES;
   readonly mobile = signal(false);
+  readonly mobileViewport = signal<{ height: number; top: number } | null>(null);
   private readonly document = inject(DOCUMENT);
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly destroyRef = inject(DestroyRef);
@@ -54,12 +55,27 @@ export class AssistantPanelComponent {
 
   constructor() {
     afterNextRender(() => {
-      const media = this.document.defaultView?.matchMedia('(max-width: 760px)');
-      if (!media) return;
+      const view = this.document.defaultView;
+      if (!view?.matchMedia) return;
+      const media = view.matchMedia('(max-width: 760px)');
       const update = () => this.mobile.set(media.matches);
       update();
       media.addEventListener('change', update);
-      this.destroyRef.onDestroy(() => media.removeEventListener('change', update));
+      // Mobile keyboards may resize only the visual viewport, leaving 100dvh unchanged.
+      const viewport = view.visualViewport;
+      const updateViewport = () => {
+        this.mobileViewport.set(
+          viewport ? { height: viewport.height, top: viewport.offsetTop } : null,
+        );
+      };
+      updateViewport();
+      viewport?.addEventListener('resize', updateViewport);
+      viewport?.addEventListener('scroll', updateViewport);
+      this.destroyRef.onDestroy(() => {
+        media.removeEventListener('change', update);
+        viewport?.removeEventListener('resize', updateViewport);
+        viewport?.removeEventListener('scroll', updateViewport);
+      });
     });
     afterRenderEffect(() => {
       const open = this.assistant.isOpen();

@@ -1,6 +1,7 @@
 :host {
   display: block;
   min-width: 0;
+  container: single-date-picker / inline-size;
 }
 .date-trigger {
   display: flex;
@@ -48,6 +49,24 @@
 .date-trigger .chevron {
   width: 14px;
   height: 14px;
+}
+@container single-date-picker (max-width: 180px) {
+  .date-trigger {
+    gap: 7px;
+    padding-inline: 10px;
+  }
+  .date-trigger .chevron {
+    display: none;
+  }
+}
+@container single-date-picker (max-width: 120px) {
+  .date-trigger {
+    padding-inline: 8px;
+    font-size: 11px;
+  }
+  .date-trigger app-icon {
+    display: none;
+  }
 }
 .date-hint,
 .date-format {

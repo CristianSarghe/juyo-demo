@@ -1,4 +1,6 @@
 :host {
+  width: 100%;
+  container: reservations / inline-size;
   display: block;
   min-width: 0;
 }
@@ -10,6 +12,7 @@
   background: #fff;
 }
 .section-heading {
+  flex-wrap: wrap;
   margin-bottom: 14px;
 }
 .section-heading h2 {
@@ -147,7 +150,7 @@ table small {
     transform: translateY(0);
   }
 }
-@media (max-width: 600px) {
+@container reservations (max-width: 600px) {
   .reservations-panel {
     padding: 17px 14px;
   }

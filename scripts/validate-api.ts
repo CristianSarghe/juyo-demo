@@ -198,6 +198,24 @@ async function main(): Promise<void> {
           row.departure > asOf,
       ),
     );
+    const selectedType = 'dev-bru-type-1';
+    const typeRooms = new Set(
+      NETWORK_DATA.rooms.filter((room) => room.roomTypeId === selectedType).map((room) => room.id),
+    );
+    for (const [path, rows] of [
+      ['/room-states', NETWORK_DATA.dailyRoomStates],
+      ['/reservation-nights', NETWORK_DATA.reservationNights],
+    ] as const) {
+      const result = await get<Page<{ roomId: string; date: string }>>(
+        `${path}?hotelId=dev-bru&roomTypeId=${selectedType}&from=2026-11-10&to=2026-11-14&page=2&pageSize=2`,
+      );
+      const expected = rows.filter(
+        (row) => typeRooms.has(row.roomId) && row.date >= '2026-11-10' && row.date <= '2026-11-14',
+      );
+      assert.equal(result.total, expected.length, `${path} filters room membership before paging.`);
+      assert.equal(result.items.length, 2);
+      assert(result.items.every((row) => typeRooms.has(row.roomId)));
+    }
     await rejectsHttp(get('/hotels/unknown'), 404, 'NOT_FOUND');
     await rejectsHttp(get('/unknown-resource'), 404, 'NOT_FOUND');
     await rejectsHttp(post('/hotels', {}), 405, 'METHOD_NOT_ALLOWED', 'GET');
@@ -436,9 +454,9 @@ async function main(): Promise<void> {
           status: 200,
           body: {
             page,
-            pageSize: 500,
-            total: page === 1 ? 501 : 502,
-            items: page === 1 ? Array.from({ length: 500 }, (_, index) => index) : [500],
+            pageSize: 1000,
+            total: page === 1 ? 1001 : 1002,
+            items: page === 1 ? Array.from({ length: 1000 }, (_, index) => index) : [1000],
           },
         }),
       );
@@ -449,6 +467,34 @@ async function main(): Promise<void> {
     );
     assert.equal(changedPages, 2);
     changing.destroy();
+
+    const pageRequests: HttpRequest<unknown>[] = [];
+    const paginated = environment({ ...config, mode: 'http' }, (request) => {
+      pageRequests.push(request);
+      return of(handleMockRequest(request, baseUrl));
+    });
+    await firstValueFrom(
+      paginated.get(ApiClient).post('/sessions', {
+        email: 'pagination.contract@example.com',
+        password: 'x'.repeat(22),
+      }),
+    );
+    pageRequests.length = 0;
+    const monthlyStates = await firstValueFrom(
+      paginated.get(ApiClient).listAll('/room-states', { from: '2026-11-01', to: '2026-11-30' }),
+    );
+    const expectedStates = NETWORK_DATA.dailyRoomStates.filter(
+      (state) => state.date >= '2026-11-01' && state.date <= '2026-11-30',
+    );
+    assert(expectedStates.length > 1000, 'This fixture must exercise multiple 1000-row pages.');
+    assert.deepEqual(monthlyStates, expectedStates);
+    assert.equal(pageRequests.length, Math.ceil(expectedStates.length / 1000));
+    assert.deepEqual(
+      pageRequests.map((request) => request.params.get('page')),
+      pageRequests.map((_, index) => String(index + 1)),
+    );
+    assert(pageRequests.every((request) => request.params.get('pageSize') === '1000'));
+    paginated.destroy();
 
     let referenceRequests = 0;
     const referenceEnv = environment({ ...config, mode: 'http' }, () => {

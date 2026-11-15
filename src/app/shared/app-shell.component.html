@@ -1,10 +1,6 @@
 <div class="app-shell flex h-dvh min-h-0 flex-col gap-3 p-3" animate.enter="shell-enter">
   <header class="app-toolbar flex shrink-0 items-center gap-5" aria-label="Application toolbar">
-    <a
-      class="brand-link inline-flex"
-      routerLink="/network"
-      [queryParams]="{ view: 'overview' }"
-      aria-label="Juyo home"
+    <a class="brand-link inline-flex" routerLink="/" aria-label="Juyo home"
       ><img src="/assets/juyo-logo.svg" width="102" height="32" alt="Juyo"
     /></a>
     <app-select
@@ -141,34 +137,36 @@
   </button>
   <nav class="primary-nav grid gap-1" aria-label="Application">
     <a
-      routerLink="/network"
-      [queryParams]="{ view: 'overview' }"
-      [class.selected]="networkView() === 'overview'"
-      [attr.aria-current]="networkView() === 'overview' ? 'page' : null"
+      routerLink="/"
+      routerLinkActive="selected"
+      [routerLinkActiveOptions]="{
+        paths: 'exact',
+        queryParams: 'ignored',
+        fragment: 'ignored',
+        matrixParams: 'ignored',
+      }"
+      ariaCurrentWhenActive="page"
       (click)="closeNav()"
       ><app-icon name="panel" /><span>Dashboard</span></a
     >
     <a
-      routerLink="/network"
-      [queryParams]="{ view: 'rooms' }"
-      [class.selected]="networkView() === 'rooms'"
-      [attr.aria-current]="networkView() === 'rooms' ? 'page' : null"
+      routerLink="/rooms"
+      routerLinkActive="selected"
+      ariaCurrentWhenActive="page"
       (click)="closeNav()"
       ><app-icon name="building" /><span>Room management</span></a
     >
     <a
-      routerLink="/network"
-      [queryParams]="{ view: 'reservations' }"
-      [class.selected]="networkView() === 'reservations'"
-      [attr.aria-current]="networkView() === 'reservations' ? 'page' : null"
+      routerLink="/reservations"
+      routerLinkActive="selected"
+      ariaCurrentWhenActive="page"
       (click)="closeNav()"
       ><app-icon name="calendar" /><span>Reservations</span></a
     >
     <a
-      routerLink="/network"
-      [queryParams]="{ view: 'configuration' }"
-      [class.selected]="networkView() === 'configuration'"
-      [attr.aria-current]="networkView() === 'configuration' ? 'page' : null"
+      routerLink="/hotel-configuration"
+      routerLinkActive="selected"
+      ariaCurrentWhenActive="page"
       (click)="closeNav()"
       ><app-icon name="settings" /><span>Hotel configuration</span></a
     >

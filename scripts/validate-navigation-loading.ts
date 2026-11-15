@@ -28,7 +28,7 @@ import { NavigationLoadingService } from '../src/app/shared/navigation-loading.s
 const wait = (milliseconds: number) =>
   new Promise<void>((resolve) => setTimeout(resolve, milliseconds));
 
-function environment(path = '/network?view=reservations') {
+function environment(path = '/reservations') {
   const events = new Subject<Event>();
   const serializer = new DefaultUrlSerializer();
   const retries: { url: string; options?: NavigationBehaviorOptions }[] = [];
@@ -62,6 +62,19 @@ function environment(path = '/network?view=reservations') {
 }
 
 async function main() {
+  for (const [url, view] of [
+    ['/', 'overview'],
+    ['/rooms', 'rooms'],
+    ['/rooms/prices?type=room-type-one', 'rooms'],
+    ['/reservations', 'reservations'],
+    ['/hotel-configuration', 'configuration'],
+    ['/?view=rooms', 'overview'],
+    ['/reservations?view=configuration', 'reservations'],
+  ]) {
+    const initial = environment(url);
+    assert.equal(initial.loading.targetView(), view, `Startup loading follows the path ${url}`);
+    initial.env.destroy();
+  }
   for (const removedView of ['schema', 'costs']) {
     const legacy = environment(`/network?view=${removedView}`);
     assert.equal(legacy.loading.targetView(), 'overview', 'Removed pages use the Overview loader');
@@ -69,27 +82,27 @@ async function main() {
   }
   const app = environment();
   const { loading, events } = app;
-  const networkRoute = { path: 'network' };
+  const workspaceRoute = { path: '' };
   const chatRoute = { path: 'chat' };
   assert.equal(loading.initialized(), false);
   assert.equal(loading.targetView(), 'reservations', 'Startup uses the browser URL before routing');
   assert.equal(loading.pending(), false);
 
-  events.next(new NavigationStart(1, '/network?view=rooms'));
-  events.next(new RouteConfigLoadStart(networkRoute));
+  events.next(new NavigationStart(1, '/rooms'));
+  events.next(new RouteConfigLoadStart(workspaceRoute));
   assert.equal(loading.pending(), true);
   assert.equal(loading.targetView(), 'rooms');
   assert.equal(loading.visible(), false, 'A fast download does not paint a skeleton');
-  events.next(new RouteConfigLoadEnd(networkRoute));
-  events.next(new NavigationEnd(1, '/network?view=rooms', '/network?view=rooms'));
+  events.next(new RouteConfigLoadEnd(workspaceRoute));
+  events.next(new NavigationEnd(1, '/rooms', '/rooms'));
   await wait(135);
   assert.equal(loading.visible(), false, 'Finishing cancels the delayed feedback');
   assert.equal(loading.initialized(), true);
 
-  events.next(new NavigationStart(2, '/network?view=configuration'));
+  events.next(new NavigationStart(2, '/hotel-configuration'));
   await wait(135);
   assert.equal(loading.visible(), false, 'Cached navigation has no invented download loader');
-  events.next(new NavigationEnd(2, '/network?view=configuration', '/network?view=configuration'));
+  events.next(new NavigationEnd(2, '/hotel-configuration', '/hotel-configuration'));
 
   events.next(new NavigationStart(3, '/chat'));
   events.next(new RouteConfigLoadStart(chatRoute));
@@ -103,17 +116,17 @@ async function main() {
   assert.equal(loading.visible(), false, 'Successful navigation has no minimum display delay');
   assert.equal(loading.pending(), false);
 
-  events.next(new NavigationStart(4, '/network?view=reservations'));
-  events.next(new RouteConfigLoadStart(networkRoute));
-  events.next(new NavigationStart(5, '/network?view=overview'));
-  events.next(new NavigationCancel(4, '/network?view=reservations', 'Superseded'));
-  events.next(new NavigationError(4, '/network?view=reservations', new Error('Old failure')));
+  events.next(new NavigationStart(4, '/reservations'));
+  events.next(new RouteConfigLoadStart(workspaceRoute));
+  events.next(new NavigationStart(5, '/'));
+  events.next(new NavigationCancel(4, '/reservations', 'Superseded'));
+  events.next(new NavigationError(4, '/reservations', new Error('Old failure')));
   assert.equal(loading.pending(), true, 'An old terminal event cannot finish newer navigation');
   assert.equal(loading.error(), '');
   await wait(135);
   assert.equal(loading.visible(), true);
-  events.next(new RouteConfigLoadEnd(networkRoute));
-  events.next(new NavigationEnd(5, '/network?view=overview', '/network?view=overview'));
+  events.next(new RouteConfigLoadEnd(workspaceRoute));
+  events.next(new NavigationEnd(5, '/', '/'));
   assert.equal(loading.targetView(), 'overview');
 
   events.next(new NavigationStart(6, '/chat'));
@@ -126,11 +139,11 @@ async function main() {
   assert.equal(loading.initialized(), true, 'The previous routed page stays usable');
   events.next(new RouteConfigLoadEnd(chatRoute));
 
-  events.next(new NavigationStart(7, '/network?view=configuration'));
-  events.next(new RouteConfigLoadStart(networkRoute));
-  events.next(new NavigationError(7, '/network?view=configuration', new Error('Private details')));
+  events.next(new NavigationStart(7, '/hotel-configuration'));
+  events.next(new RouteConfigLoadStart(workspaceRoute));
+  events.next(new NavigationError(7, '/hotel-configuration', new Error('Private details')));
   assert.equal(loading.error(), 'Could not open this page. Try again.');
-  assert.equal(loading.failedUrl(), '/network?view=configuration');
+  assert.equal(loading.failedUrl(), '/hotel-configuration');
   assert.equal(loading.pending(), false);
   app.retryWith(async (url) => {
     events.next(new NavigationStart(8, url));
@@ -139,22 +152,22 @@ async function main() {
   });
   assert.equal(await loading.retry(), true);
   assert.deepEqual(app.retries, [
-    { url: '/network?view=configuration', options: { onSameUrlNavigation: 'reload' } },
+    { url: '/hotel-configuration', options: { onSameUrlNavigation: 'reload' } },
   ]);
   assert.equal(loading.error(), '');
   assert.equal(loading.failedUrl(), null);
   assert.equal(await loading.retry(), false, 'There is nothing to retry after success');
 
-  events.next(new NavigationStart(9, '/network?view=configuration'));
+  events.next(new NavigationStart(9, '/hotel-configuration'));
   await wait(135);
   assert.equal(loading.visible(), false, 'Failed imports do not leave stale lazy-loading state');
-  events.next(new NavigationSkipped(9, '/network?view=configuration', 'Same URL'));
+  events.next(new NavigationSkipped(9, '/hotel-configuration', 'Same URL'));
   assert.equal(loading.pending(), false);
   assert.equal(loading.error(), '');
   events.next(new NavigationStart(10, '/room-prices'));
   assert.equal(loading.targetView(), 'rooms');
-  events.next(new NavigationEnd(10, '/room-prices', '/network?view=rooms&section=prices'));
-  assert.equal(loading.targetUrl(), '/network?view=rooms&section=prices');
+  events.next(new NavigationEnd(10, '/room-prices', '/rooms/prices'));
+  assert.equal(loading.targetUrl(), '/rooms/prices');
 
   events.next(new NavigationStart(11, '/chat'));
   events.next(new RouteConfigLoadStart(chatRoute));
@@ -169,11 +182,11 @@ async function main() {
   events.next(new RouteConfigLoadEnd(chatRoute));
   events.next(new NavigationEnd(12, '/chat', '/chat'));
   assert.equal(loading.visible(), false);
-  events.next(new NavigationStart(13, '/network'));
-  events.next(new ResolveStart(13, '/network', '/network', {} as any));
+  events.next(new NavigationStart(13, '/'));
+  events.next(new ResolveStart(13, '/', '/', {} as any));
   await wait(135);
   assert.equal(loading.visible(), true, 'The shared-reference resolver receives delayed feedback.');
-  events.next(new NavigationEnd(13, '/network', '/network'));
+  events.next(new NavigationEnd(13, '/', '/'));
   assert.equal(loading.visible(), false, 'Successful resolver navigation removes its skeleton.');
   app.env.destroy();
 

@@ -93,7 +93,11 @@ export class AppComponent {
     if (this.expiring) return;
     this.expiring = true;
     try {
-      await this.router.navigate(['/login']);
+      const returnUrl = this.router.url;
+      await this.router.navigate(['/login'], {
+        queryParams: returnUrl === '/' ? {} : { returnUrl },
+        replaceUrl: true,
+      });
       if (!this.auth.sessionExpired()) return;
       const { AssistantUiStore } = await import('./core/assistant-ui.store');
       if (!this.auth.sessionExpired()) return;

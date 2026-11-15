@@ -36,6 +36,7 @@
   display: flex;
   align-items: center;
   gap: 11px;
+  min-width: 0;
 }
 .assistant-emblem {
   display: grid;
@@ -71,6 +72,7 @@
   display: flex;
   align-items: center;
   gap: 3px;
+  flex: none;
 }
 .quiet-button {
   display: inline-flex;
@@ -95,6 +97,7 @@
 .assistant-transcript {
   flex: 1;
   min-height: 0;
+  min-width: 0;
   overflow-y: auto;
   overscroll-behavior: contain;
   padding: 28px 24px;
@@ -141,6 +144,8 @@
 .example-prompt > span {
   display: grid;
   gap: 5px;
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 .example-prompt strong {
   font-size: 13px;
@@ -161,6 +166,14 @@
 .example-prompt:hover {
   color: var(--kassandra-ink);
   background: var(--kassandra-soft);
+  border-radius: 12px;
+  border-top-color: transparent;
+}
+.example-prompt:hover + .example-prompt {
+  border-top-color: transparent;
+}
+.example-prompts:has(> .example-prompt:last-child:hover) {
+  border-bottom-color: transparent;
 }
 .example-prompt:hover app-icon {
   color: var(--kassandra-ink);
@@ -259,6 +272,8 @@
 }
 .assistant-error p {
   flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
   margin: 0;
 }
 .assistant-error button {

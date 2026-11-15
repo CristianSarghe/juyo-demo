@@ -1,4 +1,6 @@
 :host {
+  width: 100%;
+  container: dashboard / inline-size;
   display: block;
   min-width: 0;
 }
@@ -661,7 +663,7 @@
     transform: translateY(0);
   }
 }
-@media (max-width: 1200px) {
+@container dashboard (max-width: 1000px) {
   .revenue-workspace {
     grid-template-columns: minmax(0, 1.8fr) minmax(220px, 1fr);
     gap: 12px;
@@ -695,7 +697,7 @@
     max-width: none;
   }
 }
-@media (max-width: 950px) {
+@container dashboard (max-width: 760px) {
   .revenue-workspace {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -723,7 +725,7 @@
     margin-left: 8px;
   }
 }
-@media (max-width: 600px) {
+@container dashboard (max-width: 600px) {
   .revenue-card-heading {
     gap: 6px 10px;
   }
@@ -858,7 +860,7 @@
     border-bottom: 1px solid var(--line);
   }
 }
-@media (max-width: 380px) {
+@container dashboard (max-width: 340px) {
   .revenue-summary strong {
     font-size: 22px;
   }

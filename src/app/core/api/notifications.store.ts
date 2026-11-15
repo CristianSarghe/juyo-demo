@@ -14,7 +14,11 @@ import { RoomRateService } from '../room-rate.service';
 import { ApiClient, ApiError } from './api-client.service';
 import { NetworkApiService } from './network-api.service';
 import { ReferenceDataService } from './reference-data.service';
+import { ResourceQueryStore } from './resource-query.store';
 import type { RoomOperationChange } from './mutation.models';
+
+const CACHE_TTL_MS = 60_000;
+const MAX_ESTIMATE_ENTRIES = 48;
 
 const initial = () => ({
   warnings: null as readonly RoomWarning[] | null,
@@ -23,8 +27,11 @@ const initial = () => ({
   eventsLoading: false,
   warningsError: '',
   eventsError: '',
+  warningsExpiresAt: 0,
+  eventsExpiresAt: 0,
   roomTypeNames: {} as Readonly<Record<string, string>>,
   estimates: {} as Readonly<Record<string, Readonly<Record<string, string>>>>,
+  estimateExpiresAt: {} as Readonly<Record<string, number>>,
   estimateEventId: null as string | null,
   estimateLoading: false,
   estimateError: '',
@@ -35,6 +42,7 @@ const initial = () => ({
 export class NotificationsStore {
   private readonly api = inject(ApiClient);
   private readonly resources = inject(NetworkApiService);
+  private readonly queries = inject(ResourceQueryStore);
   private readonly reference = inject(ReferenceDataService);
   private readonly operations = inject(RoomOperationsService);
   private readonly rates = inject(RoomRateService);
@@ -53,12 +61,14 @@ export class NotificationsStore {
   private generation = 0;
   private warningRun = 0;
   private estimateRun = 0;
+  private warningDetailRun = 0;
   private warningPending?: Promise<void>;
   private eventPending?: Promise<void>;
   private activeEstimate?: UpcomingHotelEvent;
   private readonly cancel = new Subject<void>();
   private readonly cancelWarnings = new Subject<void>();
   private readonly cancelEstimate = new Subject<void>();
+  private readonly cancelWarningDetails = new Subject<void>();
 
   constructor() {
     let roomChanges = this.operations.changes();
@@ -73,7 +83,7 @@ export class NotificationsStore {
       if (!roomsChanged && !ratesChanged) return;
       const activeEstimate = this.activeEstimate;
       this.cancelDetails();
-      patchState(this.state, { estimates: {} });
+      patchState(this.state, { estimates: {}, estimateExpiresAt: {} });
       if (roomsChanged && (this.state.warnings() !== null || this.warningPending))
         void this.loadWarnings(true);
       if (activeEstimate) void this.loadEstimates(activeEstimate);
@@ -109,7 +119,8 @@ export class NotificationsStore {
     });
   }
   loadWarnings(force = false): Promise<void> {
-    if (!force && this.warnings() !== null) return Promise.resolve();
+    if (!force && this.warnings() !== null && this.state.warningsExpiresAt() > Date.now())
+      return Promise.resolve();
     if (!force && this.warningPending) return this.warningPending;
     if (force) this.cancelWarnings.next();
     const generation = this.generation;
@@ -122,7 +133,7 @@ export class NotificationsStore {
     )
       .then((warnings) => {
         if (generation === this.generation && run === this.warningRun)
-          patchState(this.state, { warnings });
+          patchState(this.state, { warnings, warningsExpiresAt: Date.now() + CACHE_TTL_MS });
       })
       .catch((error: unknown) => {
         if (generation === this.generation && run === this.warningRun)
@@ -138,7 +149,8 @@ export class NotificationsStore {
     return pending;
   }
   loadEvents(): Promise<void> {
-    if (this.events() !== null) return Promise.resolve();
+    if (this.events() !== null && this.state.eventsExpiresAt() > Date.now())
+      return Promise.resolve();
     if (this.eventPending) return this.eventPending;
     const generation = this.generation;
     patchState(this.state, { eventsLoading: true, eventsError: '' });
@@ -150,7 +162,8 @@ export class NotificationsStore {
         .pipe(takeUntil(this.cancel)),
     )
       .then((events) => {
-        if (generation === this.generation) patchState(this.state, { events });
+        if (generation === this.generation)
+          patchState(this.state, { events, eventsExpiresAt: Date.now() + CACHE_TTL_MS });
       })
       .catch((error: unknown) => {
         if (generation === this.generation)
@@ -166,15 +179,15 @@ export class NotificationsStore {
       }));
   }
   async loadWarningDetails(warning: RoomWarning): Promise<void> {
-    if (this.roomTypeNames()[warning.room.roomTypeId]) return;
     const generation = this.generation;
+    const run = this.warningDetailRun;
     try {
       const types = await firstValueFrom(
-        this.resources
+        this.queries
           .list('roomTypes', { hotelId: warning.hotel.id })
-          .pipe(takeUntil(this.cancel)),
+          .pipe(takeUntil(this.cancel), takeUntil(this.cancelWarningDetails)),
       );
-      if (generation !== this.generation) return;
+      if (generation !== this.generation || run !== this.warningDetailRun) return;
       patchState(this.state, {
         roomTypeNames: {
           ...this.roomTypeNames(),
@@ -190,6 +203,7 @@ export class NotificationsStore {
     const run = ++this.estimateRun;
     const generation = this.generation;
     this.activeEstimate = item;
+    this.pruneEstimates();
     const cached = this.estimates()[item.event.id] ?? {};
     if (item.impacts.every((impact) => cached[impact.hotelId])) {
       patchState(this.state, {
@@ -211,7 +225,14 @@ export class NotificationsStore {
         results[impact.hotelId] = await this.estimate(item, impact);
         if (generation !== this.generation || run !== this.estimateRun) return;
       }
-      patchState(this.state, { estimates: { ...this.estimates(), [item.event.id]: results } });
+      patchState(this.state, {
+        estimates: { ...this.estimates(), [item.event.id]: results },
+        estimateExpiresAt: {
+          ...this.state.estimateExpiresAt(),
+          [item.event.id]: this.state.estimateExpiresAt()[item.event.id] ?? Date.now() + CACHE_TTL_MS,
+        },
+      });
+      this.pruneEstimates();
     } catch (error) {
       if (generation === this.generation && run === this.estimateRun)
         patchState(this.state, {
@@ -225,20 +246,37 @@ export class NotificationsStore {
   cancelDetails(): void {
     this.activeEstimate = undefined;
     this.estimateRun++;
+    this.warningDetailRun++;
     this.cancelEstimate.next();
+    this.cancelWarningDetails.next();
     patchState(this.state, { estimateEventId: null, estimateLoading: false, estimateError: '' });
   }
   clear(): void {
     this.generation++;
     this.warningRun++;
     this.estimateRun++;
+    this.warningDetailRun++;
     this.cancel.next();
     this.cancelWarnings.next();
     this.cancelEstimate.next();
+    this.cancelWarningDetails.next();
     this.warningPending = undefined;
     this.eventPending = undefined;
     this.activeEstimate = undefined;
     patchState(this.state, initial());
+  }
+
+  private pruneEstimates(): void {
+    const expiresAt = this.state.estimateExpiresAt();
+    const now = Date.now();
+    const ids = Object.keys(this.estimates())
+      .filter((id) => expiresAt[id] > now)
+      .sort((left, right) => expiresAt[right] - expiresAt[left])
+      .slice(0, MAX_ESTIMATE_ENTRIES);
+    patchState(this.state, {
+      estimates: Object.fromEntries(ids.map((id) => [id, this.estimates()[id]])),
+      estimateExpiresAt: Object.fromEntries(ids.map((id) => [id, expiresAt[id]])),
+    });
   }
 
   private async estimate(item: UpcomingHotelEvent, impact: EventHotelImpact): Promise<string> {
@@ -250,13 +288,13 @@ export class NotificationsStore {
     const query = { hotelId: impact.hotelId, from: range.startDate, to: range.endDate };
     const context = await firstValueFrom(
       forkJoin({
-        types: this.resources.list('roomTypes', { hotelId: impact.hotelId }),
-        rooms: this.resources.list('rooms', { hotelId: impact.hotelId }),
-        states: this.resources.list('dailyRoomStates', query),
+        types: this.queries.list('roomTypes', { hotelId: impact.hotelId }),
+        rooms: this.queries.list('rooms', { hotelId: impact.hotelId }),
+        states: this.queries.list('dailyRoomStates', query),
         rates: this.resources.list('roomRates', query),
         changes:
           range.startDate === today
-            ? this.api.get<RoomOperationChange[]>('/room-state-changes')
+            ? this.queries.roomChanges()
             : of([] as RoomOperationChange[]),
       }).pipe(takeUntil(this.cancel), takeUntil(this.cancelEstimate)),
     );
@@ -270,7 +308,7 @@ export class NotificationsStore {
     const changes = new Map(
       context.changes.map((change) => [`${change.roomId}/${change.date}`, change]),
     );
-    const candidates = context.types
+    const candidates = [...context.types]
       .sort((a, b) => b.inventory - a.inventory)
       .flatMap((type) => {
         let availableRoomNights = 0;

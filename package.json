@@ -19,6 +19,7 @@
     "test:session": "tsx scripts/validate-session.ts",
     "docs:api": "tsx scripts/generate-openapi.ts",
     "test:loading": "tsx scripts/validate-scoped-loading.ts && tsx scripts/validate-notifications.ts && tsx scripts/validate-navigation-loading.ts",
+    "test:routing": "tsx scripts/validate-routing.ts && tsx scripts/validate-navigation-loading.ts",
     "test": "ng test --watch=false",
     "test:watch": "ng test --watch",
     "test:coverage": "ng test --watch=false --coverage"

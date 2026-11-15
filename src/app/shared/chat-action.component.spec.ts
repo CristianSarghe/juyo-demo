@@ -33,7 +33,7 @@ const batch = (
   details: { updates },
 });
 
-function render(action: ChatAction) {
+function render(action: unknown) {
   const fixture = TestBed.createComponent(ChatActionComponent);
   fixture.componentRef.setInput('action', action);
   fixture.detectChanges();
@@ -166,6 +166,44 @@ describe('ChatActionComponent batch price review', () => {
     expect(element.textContent).toContain('Change cancelled');
     expect(element.querySelectorAll('button')).toHaveLength(0);
   });
+
+  it.each([
+    { name: 'unknown action', action: { ...batch([row()]), kind: 'future_action' } },
+    { name: 'missing details', action: { ...batch([row()]), details: null } },
+    { name: 'empty batch', action: batch([]) },
+    {
+      name: 'missing quote fingerprint',
+      action: batch([row({ expectedRateVersion: '' })]),
+    },
+    { name: 'nonfinite amount', action: batch([row({ nightlyRate: Number.NaN })]) },
+    {
+      name: 'overlapping inclusive dates',
+      action: batch([row(), row({ startDate: '2026-11-20', endDate: '2026-11-22' })]),
+    },
+  ])('blocks Apply for $name while preserving safe cancellation', ({ action }) => {
+    const { fixture, element } = render(action);
+    expect(element.querySelector('.apply-change')).toBeNull();
+    expect(element.querySelectorAll('.rate-row')).toHaveLength(0);
+    expect(element.querySelector('[role=status]')?.textContent).toContain(
+      'cannot be reviewed safely',
+    );
+    const cancel = element.querySelector<HTMLButtonElement>('.cancel-change')!;
+    const decision = vi.fn();
+    fixture.componentInstance.decision.subscribe(decision);
+    cancel.click();
+    expect(decision).toHaveBeenCalledExactlyOnceWith('cancel');
+  });
+
+  it.each([null, {}, { id: '', status: 'pending' }, { id: 'unknown', status: 'applied' }])(
+    'never exposes a decision for an invalid pending envelope: %j',
+    (action) => {
+      const { element } = render(action);
+      expect(element.querySelectorAll('button')).toHaveLength(0);
+      expect(element.querySelector('[role=status]')?.textContent).toContain(
+        'cannot be reviewed safely',
+      );
+    },
+  );
 });
 
 describe('batch review dates and grouping', () => {

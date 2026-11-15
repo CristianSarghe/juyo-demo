@@ -92,17 +92,17 @@ describe('ApiClient', () => {
   });
 
   it('collects every page in order while retaining the hotel filter', async () => {
-    const firstPage = Array.from({ length: 500 }, (_, index) => ({ id: `room-${index}` }));
+    const firstPage = Array.from({ length: 1000 }, (_, index) => ({ id: `room-${index}` }));
     const result = firstValueFrom(api.listAll<{ id: string }>('/rooms', { hotelId: 'berlin' }));
     const first = http.expectOne((value) => value.params.get('page') === '1');
     expect(first.request.params.get('hotelId')).toBe('berlin');
-    expect(first.request.params.get('pageSize')).toBe('500');
-    first.flush({ items: firstPage, total: 501, page: 1, pageSize: 500 });
+    expect(first.request.params.get('pageSize')).toBe('1000');
+    first.flush({ items: firstPage, total: 1001, page: 1, pageSize: 1000 });
 
     const second = http.expectOne((value) => value.params.get('page') === '2');
     expect(second.request.params.get('hotelId')).toBe('berlin');
-    second.flush({ items: [{ id: 'room-500' }], total: 501, page: 2, pageSize: 500 });
-    expect(await result).toEqual([...firstPage, { id: 'room-500' }]);
+    second.flush({ items: [{ id: 'room-1000' }], total: 1001, page: 2, pageSize: 1000 });
+    expect(await result).toEqual([...firstPage, { id: 'room-1000' }]);
   });
 
   it('exposes a failed write as an API problem without repeating the mutation', async () => {

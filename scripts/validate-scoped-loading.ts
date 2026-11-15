@@ -73,7 +73,7 @@ const env = createEnvironmentInjector(
                   malformedNext = false;
                   return new HttpResponse({
                     status: 200,
-                    body: { items: [null], page: 1, pageSize: 500, total: 1 },
+                    body: { items: [null], page: 1, pageSize: 1000, total: 1 },
                   });
                 }
                 return handleMockRequest(request, '/api/v1');
@@ -194,6 +194,20 @@ async function main() {
       new Set(['/rooms', '/room-states', '/room-rates', `/room-types/${type.id}/price-history`]),
     );
     assert(store.data.rooms.every((room) => room.roomTypeId === type.id));
+    const stateRequests = requests
+      .slice(pricesStart)
+      .filter((request) => request.pathname.endsWith('/room-states'));
+    assert(stateRequests.length > 0);
+    assert(
+      stateRequests.every((request) => request.searchParams.get('roomTypeId') === type.id),
+      'Pricing filters room states by the selected type at the API boundary.',
+    );
+    const selectedRooms = new Set(store.data.rooms.map((room) => room.id));
+    assert(
+      store.data.dailyRoomStates.length > 0 &&
+        store.data.dailyRoomStates.every((state) => selectedRooms.has(state.roomId)),
+      'Selected-type availability has only that room type’s dated states.',
+    );
     assert(
       store.data.roomRates.every(
         (rate) =>
@@ -359,6 +373,48 @@ async function main() {
     }
     assert.equal(requests.length, beforeExpiry + 1, 'Expired page/resource data is fetched again.');
     assert.equal(env.get(ReferenceDataService).data.hotels.length, 4);
+    for (const selection of [
+      { startDate: '2026-11-01', endDate: '2026-11-30' },
+      { startDate: asOf, endDate: asOf },
+    ]) {
+      store.invalidate();
+      const start = requests.length;
+      await store.load({ view: 'overview', scope, range: selection });
+      const positions = requests
+        .slice(start)
+        .filter((request) => request.pathname.endsWith('/analytics/booking-positions'));
+      assert.equal(
+        positions.length,
+        1,
+        'Exact month/day overview reuses organization positions instead of fetching a duplicate hotel subset.',
+      );
+      assert.equal(positions[0].searchParams.has('hotelId'), false);
+      assert.deepEqual(
+        createNetworkSelectors(store.data).bookingOutlook(scope, selection),
+        expected.bookingOutlook(scope, selection),
+      );
+      const dayStart = requests.length;
+      await store.loadDay(scope, asOf);
+      assert(
+        requests
+          .slice(dayStart)
+          .every((request) => !request.pathname.endsWith('/analytics/booking-positions')),
+        'Daily facts reuse complete positions already published by the active overview.',
+      );
+    }
+    const expiredDayStart = requests.length;
+    try {
+      Date.now = () => realNow() + 61_000;
+      await store.loadDay(scope, asOf);
+    } finally {
+      Date.now = realNow;
+    }
+    assert(
+      requests
+        .slice(expiredDayStart)
+        .some((request) => request.pathname.endsWith('/analytics/booking-positions')),
+      'An expired overview cannot supply stale positions to a fresh day read.',
+    );
     noExport();
     store.clear();
     assert.equal(store.snapshot(), null);

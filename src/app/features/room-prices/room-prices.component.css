@@ -1,4 +1,6 @@
 :host {
+  width: 100%;
+  container: room-pricing / inline-size;
   display: block;
   min-width: 0;
 }
@@ -14,9 +16,9 @@
   outline: none;
 }
 .pricing-filters {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   align-items: start;
-  flex-wrap: wrap;
   gap: 16px;
   padding: 22px 24px;
   margin-bottom: 18px;
@@ -50,13 +52,18 @@
 .rate-workspace {
   display: grid;
   grid-template-columns: minmax(0, 1.5fr) minmax(280px, 1fr);
+  grid-template-areas: 'analysis update';
   gap: 18px;
   align-items: start;
 }
 .rate-analysis {
+  grid-area: analysis;
   display: grid;
   gap: 18px;
   min-width: 0;
+}
+.update-panel {
+  grid-area: update;
 }
 .current-rates,
 .update-panel {
@@ -106,6 +113,11 @@ h3 {
   max-width: 100%;
   overflow: auto;
   scrollbar-width: thin;
+}
+.table-scroll:focus-visible {
+  outline: 2px solid var(--brand-ink);
+  outline-offset: 3px;
+  border-radius: 4px;
 }
 table {
   width: 100%;
@@ -287,16 +299,23 @@ tbody tr:last-child > * {
     transform: translateY(0);
   }
 }
-@media (max-width: 1100px) {
+@container room-pricing (max-width: 820px) {
   .rate-workspace {
     grid-template-columns: 1fr;
-  }
-  .update-panel {
-    max-width: 560px;
-    width: 100%;
+    grid-template-areas:
+      'update'
+      'analysis';
   }
 }
-@media (max-width: 600px) {
+@container room-pricing (max-width: 600px) {
+  .pricing-filters {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .pricing-filters > .filter-field:first-child {
+    grid-column: 1 / -1;
+  }
+}
+@container room-pricing (max-width: 600px) {
   .pricing-filters,
   .current-rates,
   .update-panel {
@@ -304,9 +323,6 @@ tbody tr:last-child > * {
   }
   .pricing-filters {
     gap: 14px;
-  }
-  .filter-field {
-    flex-basis: 100%;
   }
   .rate-range {
     font-size: 17px;

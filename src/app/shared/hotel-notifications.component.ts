@@ -252,8 +252,8 @@ export class HotelNotificationsComponent {
   async viewRoom(warning: RoomWarning): Promise<void> {
     this.closeAll();
     this.hotels.select(warning.hotel.id);
-    await this.router.navigate(['/network'], {
-      queryParams: { view: 'rooms', room: warning.room.id },
+    await this.router.navigate(['/rooms'], {
+      queryParams: { room: warning.room.id },
     });
     afterNextRender(() => document.getElementById('room-search')?.focus(), {
       injector: this.injector,
@@ -263,10 +263,8 @@ export class HotelNotificationsComponent {
     const hotelId = this.mapHotelId() ?? item.impacts[0]?.hotelId;
     this.closeAll();
     if (hotelId) this.hotels.select(hotelId);
-    await this.router.navigate(['/network'], {
+    await this.router.navigate(['/rooms/prices'], {
       queryParams: {
-        view: 'rooms',
-        section: 'prices',
         event: item.event.id,
         from: item.event.startDate < this.asOf ? this.asOf : item.event.startDate,
         through: item.event.endDate,

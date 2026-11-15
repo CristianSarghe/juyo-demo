@@ -327,13 +327,20 @@ export class NetworkDataStore {
     if (request.view === 'overview') {
       const range = this.reference.validateDateRange(request.range);
       const context = range.startDate === range.endDate ? range : this.enclosingMonths(range);
+      // Whole-month and single-day comparisons already contain every selected-hotel position.
+      const comparisonCoversContext =
+        request.scope !== 'portfolio' &&
+        context.startDate === range.startDate &&
+        context.endDate === range.endDate;
       const rows = await this.pageRead(
         forkJoin({
           roomTypes: this.queries.list('roomTypes', scope),
-          selectedPositions: this.queries.list('bookingPositions', {
-            ...scope,
-            ...dateQuery(context),
-          }),
+          selectedPositions: comparisonCoversContext
+            ? of([])
+            : this.queries.list('bookingPositions', {
+                ...scope,
+                ...dateQuery(context),
+              }),
           organizationPositions:
             request.scope === 'portfolio'
               ? of([])
@@ -402,7 +409,11 @@ export class NetworkDataStore {
     const rows = await this.pageRead(
       forkJoin({
         rooms: this.queries.list('rooms', { ...scope, roomTypeId: type.id }),
-        dailyRoomStates: this.queries.list('dailyRoomStates', { ...scope, ...dateQuery(range) }),
+        dailyRoomStates: this.queries.list('dailyRoomStates', {
+          ...scope,
+          ...dateQuery(range),
+          roomTypeId: type.id,
+        }),
         roomRates: this.queries.list('roomRates', {
           ...scope,
           ...dateQuery(range),
@@ -438,11 +449,27 @@ export class NetworkDataStore {
         : previous;
     const scope = scopeQuery(scopeValue);
     const current = date === this.reference.data.bookingSnapshot.asOf;
+    const pagePositions = this.state.value()?.bookingPositions.filter(
+      (position) =>
+        position.stayDate === date &&
+        (scopeValue === 'portfolio' || position.hotelId === scopeValue),
+    );
+    const hotels = this.reference.data.hotels.filter(
+      (hotel) => scopeValue === 'portfolio' || hotel.id === scopeValue,
+    );
+    const pageHasPositions =
+      !!this.state.activeKey() &&
+      !this.state.loading() &&
+      this.state.expiresAt() > Date.now() &&
+      !!pagePositions &&
+      hotels.every((hotel) => pagePositions.some((position) => position.hotelId === hotel.id));
     const rows = await firstValueFrom(
       forkJoin({
         rooms: this.queries.list('rooms', scope),
         dailyRoomStates: this.queries.list('dailyRoomStates', { ...scope, ...dateQuery(range) }),
-        bookingPositions: this.queries.list('bookingPositions', { ...scope, ...dateQuery(range) }),
+        bookingPositions: pageHasPositions
+          ? of(pagePositions!)
+          : this.queries.list('bookingPositions', { ...scope, ...dateQuery(range) }),
         // Overlap the previous night as well, otherwise departures on this date disappear.
         reservations: this.queries.list('reservations', { ...scope, from, to: date }),
         changes: current ? this.queries.roomChanges() : of([]),

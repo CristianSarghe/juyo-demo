@@ -107,6 +107,15 @@ function list(key: CollectionKey, params: URLSearchParams): unknown[] {
         })),
     );
   }
+  const roomTypeId = params.get('roomTypeId');
+  const roomTypeRoomIds =
+    (key === 'dailyRoomStates' || key === 'reservationNights') && roomTypeId
+      ? new Set(
+          NETWORK_DATA.rooms
+            .filter((room) => room.roomTypeId === roomTypeId)
+            .map((room) => room.id),
+        )
+      : null;
   return rows.filter((row) => {
     if (hotelScope !== 'portfolio') {
       if (
@@ -122,7 +131,12 @@ function list(key: CollectionKey, params: URLSearchParams): unknown[] {
     }
     for (const field of ['roomTypeId', 'roomId', 'eventId', 'status']) {
       const wanted = params.get(field);
-      if (wanted && row[field] !== wanted) return false;
+      if (
+        field === 'roomTypeId' &&
+        (key === 'dailyRoomStates' || key === 'reservationNights')
+      ) {
+        if (wanted && !roomTypeRoomIds?.has(String(row.roomId))) return false;
+      } else if (wanted && row[field] !== wanted) return false;
     }
     const stayDate = params.get('stayDate');
     if (

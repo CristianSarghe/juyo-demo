@@ -486,7 +486,7 @@ const pagination = [
   param(
     'pageSize',
     { type: 'integer', minimum: 1, maximum: 1000, default: 50 },
-    'Maximum rows per page. Cache loaders request 500.',
+    'Maximum rows per page. Cache loaders request 1000.',
   ),
 ];
 const response = (schema?: Schema, description = 'Successful response', status = 200): Schema => ({
@@ -630,7 +630,11 @@ for (const [collection, path] of Object.entries(RESOURCE_PATHS)) {
   const parameters: Schema[] = [...pagination];
   if (collection !== 'reportingPeriods') parameters.push(hotel);
   if (dated.has(collection)) parameters.push(from, to);
-  if (['roomRates', 'rooms', 'reservations'].includes(collection))
+  if (
+    ['roomRates', 'rooms', 'reservations', 'dailyRoomStates', 'reservationNights'].includes(
+      collection,
+    )
+  )
     parameters.push(
       param('roomTypeId', opaque(), 'Filter records with this room-type foreign key.'),
     );
@@ -896,7 +900,7 @@ paths['/conversations/{conversationId}/messages'] = {
       [401, 404, 405, 422, 429, 500, 502, 503, 504],
     ),
     description:
-      'Returns the updated user-owned conversation with the user message and OpenAI answer grounded through authenticated MCP tools. Optional context carries the current hotel and inclusive dashboard interval; explicit dates in the question do not alter global UI filters. A proposed change is stored as Message.action and needs a separate decision. The pair commits atomically and history retains at most 100 messages. The explicit offline mock returns deterministic fixture answers. Stop unsubscribes the client request; the server may already have accepted it. Chat uses a bounded 90-second client timeout and receives no automatic retry.',
+      'Returns the updated user-owned conversation with the user message and OpenAI answer grounded through authenticated MCP tools. Optional context carries the current hotel and inclusive dashboard interval; explicit dates in the question do not alter global UI filters. A proposed change is stored as Message.action and needs a separate decision. The pair commits atomically and history retains at most 100 messages. The explicit offline mock returns deterministic fixture answers. Stop unsubscribes the client request; the server may already have accepted it. Chat uses a bounded 180-second client timeout and receives no automatic retry.',
   },
 };
 paths['/conversations/{conversationId}/actions/{actionId}'] = {
@@ -914,7 +918,7 @@ paths['/conversations/{conversationId}/actions/{actionId}'] = {
       [401, 404, 405, 409, 422, 500, 503],
     ),
     description:
-      'Requires the conversation owner and an explicit user decision. Applies the stored rate or room action in the same transaction as its status change. Repeating the same decision returns the existing result without another write; an opposite decision returns 409 CHAT_ACTION_ALREADY_DECIDED. Room changes reject stale business dates and occupied-room conflicts. The client refreshes the corresponding operational overlay after a successful apply. This endpoint is not implemented by the explicit offline fixture adapter.',
+      'Requires the conversation owner and an explicit user decision. Applies the stored rate or room action in the same transaction as its status change. Repeating the same decision returns the existing result without another write; an opposite decision returns 409 CHAT_ACTION_ALREADY_DECIDED. Room changes reject stale business dates and occupied-room conflicts. The client refreshes the corresponding operational overlay after a successful apply. The explicit offline fixture adapter supports event-pricing proposal decisions.',
   },
 };
 const api = {
@@ -923,12 +927,12 @@ const api = {
     title: 'Juyo hotel network API',
     version: '1.0.0',
     description:
-      'SQL-backed REST API for a locally served Angular frontend. HTTP uses opaque bearer sessions; canonical hotel facts remain immutable. IDs are opaque and available dates/business date come from reference data. Explicit mock mode simulates this boundary in the browser, with CurrentSession instead of a bearer token at sign-in.',
+      'SQL-backed REST API for the Angular frontend hosted on Cloudflare Pages. HTTP uses opaque bearer sessions; canonical hotel facts remain immutable. IDs are opaque and available dates/business date come from reference data. Explicit mock mode simulates this boundary in the browser, with CurrentSession instead of a bearer token at sign-in.',
   },
   servers: [
     {
       url: 'https://api-juyo.cristiansarghe.com/api/v1',
-      description: 'Configured Cloudflare Worker API endpoint; frontend is not hosted.',
+      description: 'Cloudflare Worker API endpoint for the Cloudflare Pages frontend.',
     },
     {
       url: 'http://127.0.0.1:8788/api/v1',

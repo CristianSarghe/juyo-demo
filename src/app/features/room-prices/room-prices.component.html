@@ -42,52 +42,6 @@
     <p class="error date-error" id="rate-date-error" role="alert">{{ rangeError() }}</p>
   }
   <div class="rate-workspace">
-    <div class="rate-analysis">
-      <app-room-price-history
-        [hotelId]="hotelId()"
-        [roomTypeId]="roomTypeId()"
-        [selection]="range()"
-      />
-      <section class="current-rates">
-        <header class="card-heading">
-          <div>
-            <h3>Current rates</h3>
-            <p>{{ hotelName() }} · {{ roomType().name }} · Per room, per night</p>
-          </div>
-          <strong class="rate-range">{{ currentRate() }}</strong>
-        </header>
-        @if (days().length) {
-          <div class="rate-summary">
-            <span>{{ days().length }} {{ days().length === 1 ? 'night' : 'nights' }}</span
-            ><span>{{ available() }} room nights available</span>
-          </div>
-          <div class="table-scroll" tabindex="0" aria-label="Current nightly rates">
-            <table>
-              <thead>
-                <tr>
-                  <th>Dates</th>
-                  <th class="nights-column">Nights</th>
-                  <th class="price-column">Nightly rate</th>
-                </tr>
-              </thead>
-              <tbody>
-                @for (period of periods(); track period.startDate) {
-                  <tr>
-                    <th scope="row">{{ dates(period.startDate, period.endDate) }}</th>
-                    <td class="nights-column">{{ period.nights }}</td>
-                    <td class="price-column">
-                      <strong>{{ money(period.nightlyRate) }}</strong>
-                    </td>
-                  </tr>
-                }
-              </tbody>
-            </table>
-          </div>
-        } @else {
-          <p class="empty-state">Choose a valid interval to see its rates.</p>
-        }
-      </section>
-    </div>
     <section class="update-panel">
       <h3>Update rates</h3>
       <p class="update-context">
@@ -182,5 +136,51 @@
         }
       </form>
     </section>
+    <div class="rate-analysis">
+      <app-room-price-history
+        [hotelId]="hotelId()"
+        [roomTypeId]="roomTypeId()"
+        [selection]="range()"
+      />
+      <section class="current-rates">
+        <header class="card-heading">
+          <div>
+            <h3>Current rates</h3>
+            <p>{{ hotelName() }} · {{ roomType().name }} · Per room, per night</p>
+          </div>
+          <strong class="rate-range">{{ currentRate() }}</strong>
+        </header>
+        @if (days().length) {
+          <div class="rate-summary">
+            <span>{{ days().length }} {{ days().length === 1 ? 'night' : 'nights' }}</span
+            ><span>{{ available() }} room nights available</span>
+          </div>
+          <div class="table-scroll" tabindex="0" aria-label="Current nightly rates">
+            <table>
+              <thead>
+                <tr>
+                  <th>Dates</th>
+                  <th class="nights-column">Nights</th>
+                  <th class="price-column">Nightly rate</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (period of periods(); track period.startDate) {
+                  <tr>
+                    <th scope="row">{{ dates(period.startDate, period.endDate) }}</th>
+                    <td class="nights-column">{{ period.nights }}</td>
+                    <td class="price-column">
+                      <strong>{{ money(period.nightlyRate) }}</strong>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        } @else {
+          <p class="empty-state">Choose a valid interval to see its rates.</p>
+        }
+      </section>
+    </div>
   </div>
 </section>

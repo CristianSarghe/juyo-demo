@@ -166,7 +166,10 @@ describe('NetworkDataStore page loading', () => {
     const months = { startDate: '2026-11-01', endDate: '2026-12-31' };
     const scope = { hotelId: hotel.id, from: months.startDate, to: months.endDate };
     expect(queries.list).toHaveBeenCalledWith('rooms', { hotelId: hotel.id, roomTypeId: suite.id });
-    expect(queries.list).toHaveBeenCalledWith('dailyRoomStates', scope);
+    expect(queries.list).toHaveBeenCalledWith('dailyRoomStates', {
+      ...scope,
+      roomTypeId: suite.id,
+    });
     expect(queries.list).toHaveBeenCalledWith('roomRates', {
       ...scope,
       roomTypeId: suite.id,

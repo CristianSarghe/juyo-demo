@@ -151,7 +151,10 @@ export class NavigationLoadingService {
       const tree = this.router.parseUrl(url);
       const page = tree.root.children[PRIMARY_OUTLET]?.segments[0]?.path;
       if (page === 'login' || page === 'chat') return page;
-      if (page === 'room-prices') return 'rooms';
+      if (page === 'rooms' || page === 'room-prices') return 'rooms';
+      if (page === 'reservations') return 'reservations';
+      if (page === 'hotel-configuration') return 'configuration';
+      if (page !== 'network') return 'overview';
       const view: unknown = tree.queryParams['view'];
       return view === 'rooms' || view === 'reservations' || view === 'configuration'
         ? view

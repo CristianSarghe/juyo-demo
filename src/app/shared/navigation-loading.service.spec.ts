@@ -27,7 +27,7 @@ describe('NavigationLoadingService', () => {
     TestBed.configureTestingModule({
       providers: [
         NavigationLoadingService,
-        { provide: Location, useValue: { path: () => '/network?view=overview' } },
+        { provide: Location, useValue: { path: () => '/' } },
         {
           provide: Router,
           useValue: { events, parseUrl: (url: string) => serializer.parse(url), navigateByUrl },
@@ -43,7 +43,7 @@ describe('NavigationLoadingService', () => {
   });
 
   it('completes a cached page navigation without flashing a loading surface', () => {
-    const url = '/network?view=rooms';
+    const url = '/rooms';
     events.next(new NavigationStart(1, url));
     expect(service.pending()).toBe(true);
     expect(service.targetView()).toBe('rooms');
@@ -60,8 +60,8 @@ describe('NavigationLoadingService', () => {
   });
 
   it('shows delayed feedback for a lazy page and removes it when the route is ready', () => {
-    const url = '/network?view=configuration';
-    const route = { path: 'network' };
+    const url = '/hotel-configuration';
+    const route = { path: 'hotel-configuration' };
     events.next(new NavigationStart(1, url));
     events.next(new RouteConfigLoadStart(route));
     vi.advanceTimersByTime(119);
@@ -80,9 +80,9 @@ describe('NavigationLoadingService', () => {
   });
 
   it('lets the user retry a failed route and clears the error after successful navigation', async () => {
-    const url = '/network?view=reservations';
+    const url = '/reservations';
     events.next(new NavigationStart(1, url));
-    events.next(new RouteConfigLoadStart({ path: 'network' }));
+    events.next(new RouteConfigLoadStart({ path: 'reservations' }));
     vi.advanceTimersByTime(120);
     events.next(new NavigationError(1, url, new Error('Chunk unavailable')));
     expect(service.visible()).toBe(false);

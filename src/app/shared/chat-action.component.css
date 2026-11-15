@@ -9,6 +9,7 @@
   padding: 16px;
   background: #fff;
   box-shadow: 0 3px 8px #37274404;
+  overflow-wrap: anywhere;
 }
 h4 {
   font-size: 13px;
@@ -33,6 +34,7 @@ dt {
   flex: none;
 }
 dd {
+  min-width: 0;
   margin: 0;
   text-align: right;
   overflow-wrap: anywhere;
@@ -57,6 +59,7 @@ p {
 }
 .decision-actions {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 8px;
   margin-top: 16px;

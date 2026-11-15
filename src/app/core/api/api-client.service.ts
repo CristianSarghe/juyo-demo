@@ -73,7 +73,7 @@ export class ApiClient {
 
   /** A bounded reporting cache, never an unbounded recursive API crawler. */
   listAll<T>(path: string, query: ApiQuery = {}): Observable<T[]> {
-    const pageSize = 500;
+    const pageSize = 1000;
     const assertPage = (page: Page<T>, expected: number) => {
       if (
         !page ||

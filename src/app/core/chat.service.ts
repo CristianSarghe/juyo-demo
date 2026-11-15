@@ -2,6 +2,7 @@ import { Injectable, computed, effect, inject } from '@angular/core';
 import { patchState, signalState } from '@ngrx/signals';
 import { firstValueFrom, Subject, takeUntil } from 'rxjs';
 import type { ChatAction, Conversation, HotelProperty, Message } from './models';
+import { isPendingChatAction, isReviewableChatAction } from './models';
 import { ApiClient } from './api/api-client.service';
 import { ReferenceDataService } from './api/reference-data.service';
 import { HotelScopeService } from './hotel-scope.service';
@@ -247,9 +248,27 @@ export class ChatService {
   }
   async decideAction(action: ChatAction, decision: 'apply' | 'cancel'): Promise<void> {
     const conversation = this.activeConversation();
-    if (!conversation || this.pendingAction() || this.isResponding() || action.status !== 'pending')
+    if (
+      !conversation ||
+      this.pendingAction() ||
+      this.isResponding() ||
+      !isPendingChatAction(action) ||
+      (decision !== 'apply' && decision !== 'cancel')
+    )
       return;
-    if (!conversation.messages.some((message) => message.action?.id === action.id)) return;
+    const stored = conversation.messages.find(
+      (message) => message.role === 'assistant' && message.action?.id === action.id,
+    )?.action;
+    if (!isPendingChatAction(stored)) return;
+    if (
+      decision === 'apply' &&
+      (!isReviewableChatAction(action) || !isReviewableChatAction(stored))
+    ) {
+      patchState(this.state, {
+        error: 'This proposal cannot be reviewed safely. Ask Kassandra for a new proposal.',
+      });
+      return;
+    }
     const generation = this.generation;
     patchState(this.state, { pendingAction: action.id, error: '' });
     try {
@@ -263,7 +282,7 @@ export class ChatService {
       this.upsert(updated);
       if (decision === 'apply') {
         try {
-          if (action.kind === 'rate_update' || action.kind === 'rate_batch_update')
+          if (stored.kind === 'rate_update' || stored.kind === 'rate_batch_update')
             await this.rates.refresh();
           else await this.operations.refresh();
         } catch {

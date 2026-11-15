@@ -12,7 +12,7 @@ coverage/
 database/generated/
 database/__pycache__/
 backend/.local/
-backend/.wrangler/
+.wrangler/
 artifacts/
 database/verification-report.json
 .dev.vars*

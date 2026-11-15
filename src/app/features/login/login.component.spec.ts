@@ -1,6 +1,6 @@
 import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { Router } from '@angular/router';
+import { ActivatedRoute, DefaultUrlSerializer, Router, convertToParamMap } from '@angular/router';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { AuthService } from '../../core/auth.service';
 import { LoginComponent } from './login.component';
@@ -11,14 +11,26 @@ describe('LoginComponent logic', () => {
     login: ReturnType<typeof vi.fn>;
   };
   let navigate: ReturnType<typeof vi.fn>;
+  let route: { snapshot: { queryParamMap: ReturnType<typeof convertToParamMap> } };
 
   beforeEach(() => {
     auth = { isAuthenticated: signal(false), login: vi.fn().mockResolvedValue(undefined) };
     navigate = vi.fn().mockResolvedValue(true);
+    const serializer = new DefaultUrlSerializer();
+    route = { snapshot: { queryParamMap: convertToParamMap({}) } };
     TestBed.configureTestingModule({
       providers: [
         { provide: AuthService, useValue: auth },
-        { provide: Router, useValue: { navigateByUrl: navigate } },
+        {
+          provide: Router,
+          useValue: {
+            navigateByUrl: navigate,
+            parseUrl: (url: string) => serializer.parse(url),
+            serializeUrl: (tree: Parameters<typeof serializer.serialize>[0]) =>
+              serializer.serialize(tree),
+          },
+        },
+        { provide: ActivatedRoute, useValue: route },
       ],
     }).overrideComponent(LoginComponent, { set: { template: '', imports: [] } });
   });
@@ -33,9 +45,27 @@ describe('LoginComponent logic', () => {
     await pending;
 
     expect(auth.login).toHaveBeenCalledExactlyOnceWith('alex@juyo.local', 'juyo-demo');
-    expect(navigate).toHaveBeenCalledExactlyOnceWith('/network');
+    expect(navigate).toHaveBeenCalledExactlyOnceWith('/', { replaceUrl: true });
     expect(login.errors()).toEqual({});
     expect(login.pending()).toBe(false);
+  });
+
+  it('resumes an internal pricing deep link after sign-in', async () => {
+    const target = '/rooms/prices?type=classic&from=2026-11-19#daily';
+    route.snapshot.queryParamMap = convertToParamMap({ returnUrl: target });
+    const login = TestBed.createComponent(LoginComponent).componentInstance;
+    login.email = 'alex@juyo.local';
+    login.password = 'juyo-demo';
+    await login.signIn();
+    expect(navigate).toHaveBeenCalledExactlyOnceWith(target, { replaceUrl: true });
+  });
+
+  it('uses the dashboard instead of an external or looping return destination', async () => {
+    route.snapshot.queryParamMap = convertToParamMap({ returnUrl: '//unrelated.example/rooms' });
+    auth.isAuthenticated.set(true);
+    const login = TestBed.createComponent(LoginComponent).componentInstance;
+    await login.signIn();
+    expect(navigate).toHaveBeenCalledExactlyOnceWith('/', { replaceUrl: true });
   });
 
   it('validates the form before sending credentials', async () => {

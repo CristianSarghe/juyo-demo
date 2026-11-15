@@ -1,6 +1,6 @@
 import { CurrencyPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
-import type { ChatAction } from '../core/models';
+import { isPendingChatAction, isReviewableChatAction } from '../core/models';
 import type { RateUpdateReviewItem, RoomOperationAction } from '../core/api/mutation.models';
 import { SpinnerComponent } from './spinner.component';
 import { BrandMarkComponent } from './brand-mark.component';
@@ -87,13 +87,18 @@ export class ChatActionComponent {
   readonly formatDate = formatChatActionDate;
   readonly formatRange = formatChatActionRange;
   readonly nights = priceChangeNights;
-  readonly action = input.required<ChatAction>();
+  readonly action = input.required<unknown>();
+  readonly review = computed(() => {
+    const action = this.action();
+    return isReviewableChatAction(action) ? action : null;
+  });
+  readonly canCancel = computed(() => isPendingChatAction(this.action()));
   readonly busy = input(false);
   readonly disabled = input(false);
   readonly decision = output<'apply' | 'cancel'>();
   readonly batchUpdates = computed(() => {
-    const action = this.action();
-    return action.kind === 'rate_batch_update' ? action.details.updates : [];
+    const action = this.review();
+    return action?.kind === 'rate_batch_update' ? action.details.updates : [];
   });
   readonly batchGroups = computed(() => groupRateUpdates(this.batchUpdates()));
   readonly roomTypeCount = computed(() =>

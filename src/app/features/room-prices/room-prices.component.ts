@@ -256,7 +256,7 @@ export class RoomPricesComponent {
     // A reason does not change the queried prices or reset an in-progress rate draft.
     void this.router.navigate([], {
       relativeTo: this.route,
-      queryParams: { event: value || null },
+      queryParams: { view: null, section: null, event: value || null },
       queryParamsHandling: 'merge',
       replaceUrl: true,
     });
@@ -316,8 +316,8 @@ export class RoomPricesComponent {
     void this.router.navigate([], {
       relativeTo: this.route,
       queryParams: {
-        view: 'rooms',
-        section: 'prices',
+        view: null,
+        section: null,
         from: this.range().startDate,
         through: this.range().endDate,
         type: this.roomTypeId(),

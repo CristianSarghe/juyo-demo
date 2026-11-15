@@ -1,4 +1,6 @@
 :host {
+  width: 100%;
+  container: hotel-configuration / inline-size;
   display: block;
   min-width: 0;
 }
@@ -21,7 +23,7 @@
   font-size: 12px;
   line-height: 1.7;
 }
-@media (max-width: 600px) {
+@container hotel-configuration (max-width: 600px) {
   .hotel-location {
     grid-template-columns: 1fr;
     gap: 12px;
@@ -35,6 +37,7 @@
   background: var(--surface);
 }
 .configuration-heading {
+  flex-wrap: wrap;
   margin-bottom: 18px;
 }
 .configuration-heading h2 {
@@ -125,7 +128,7 @@ td.empty-cell {
     transform: translateY(0);
   }
 }
-@media (max-width: 600px) {
+@container hotel-configuration (max-width: 600px) {
   .configuration-panel {
     padding: 18px 14px;
   }

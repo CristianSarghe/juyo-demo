@@ -3,6 +3,8 @@
     <dialog
       #mobileDialog
       class="assistant-shell mobile-assistant"
+      [style.height.px]="mobileViewport()?.height"
+      [style.top.px]="mobileViewport()?.top"
       aria-labelledby="assistant-title"
       (cancel)="onCancel($event)"
     >

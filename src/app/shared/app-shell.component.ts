@@ -13,7 +13,7 @@ import {
 import { NgTemplateOutlet } from '@angular/common';
 import { TuiAutoFocus } from '@taiga-ui/cdk';
 import { TuiDataList, TuiDropdown } from '@taiga-ui/core';
-import { NavigationEnd, Router, RouterLink, RouterOutlet } from '@angular/router';
+import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { filter, map } from 'rxjs';
 import { AuthService } from '../core/auth.service';
@@ -35,6 +35,7 @@ import { BrandMarkComponent } from './brand-mark.component';
   imports: [
     NgTemplateOutlet,
     RouterLink,
+    RouterLinkActive,
     RouterOutlet,
     IconComponent,
     AppSelectComponent,
@@ -70,11 +71,6 @@ export class AppShellComponent {
     ),
     { initialValue: this.router.url },
   );
-  readonly networkView = computed(() => {
-    if (!this.currentUrl().startsWith('/network')) return null;
-    const view = this.router.parseUrl(this.currentUrl()).queryParams['view'];
-    return ['rooms', 'reservations', 'configuration'].includes(view) ? view : 'overview';
-  });
   readonly firstName = computed(() => this.auth.user()?.name.split(' ')[0] ?? 'User');
   readonly accountMenuOpen = signal(false);
   readonly loggingOut = signal(false);

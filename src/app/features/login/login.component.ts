@@ -7,8 +7,9 @@ import {
   signal,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService } from '../../core/auth.service';
+import { safeReturnUrl } from '../../core/auth-redirect';
 import { SpinnerComponent } from '../../shared/spinner.component';
 import { WorkspaceSkeletonComponent } from '../../shared/workspace-skeleton.component';
 
@@ -22,6 +23,7 @@ import { WorkspaceSkeletonComponent } from '../../shared/workspace-skeleton.comp
 export class LoginComponent {
   readonly auth = inject(AuthService);
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
   @ViewChild('emailField') private emailField?: ElementRef<HTMLInputElement>;
   @ViewChild('passwordField') private passwordField?: ElementRef<HTMLInputElement>;
 
@@ -46,7 +48,10 @@ export class LoginComponent {
     this.pending.set(true);
     try {
       if (!this.auth.isAuthenticated()) await this.auth.login(this.email.trim(), this.password);
-      const opened = await this.router.navigateByUrl('/network');
+      const opened = await this.router.navigateByUrl(
+        safeReturnUrl(this.router, this.route.snapshot.queryParamMap.get('returnUrl')),
+        { replaceUrl: true },
+      );
       if (!opened) this.errors.set({ form: 'Could not open the workspace. Try again.' });
     } catch {
       this.errors.set({

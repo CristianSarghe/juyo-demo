@@ -1,5 +1,5 @@
 <section class="proposed-change" [attr.aria-busy]="busy()" aria-label="Proposed change">
-  @if (action(); as change) {
+  @if (review(); as change) {
     @if (change.kind === 'rate_batch_update') {
       <div class="batch-counts">
         <h4>
@@ -169,6 +169,22 @@
           {{ change.status === 'applied' ? 'Change applied' : 'Change cancelled' }}
         }
       </p>
+    }
+  } @else {
+    <p class="unsupported-change" role="status">
+      This proposal cannot be reviewed safely. Ask Kassandra for a new proposal.
+    </p>
+    @if (canCancel()) {
+      <div class="decision-actions">
+        <button
+          type="button"
+          class="cancel-change"
+          [disabled]="disabled() || busy()"
+          (click)="decision.emit('cancel')"
+        >
+          Cancel
+        </button>
+      </div>
     }
   }
 </section>
